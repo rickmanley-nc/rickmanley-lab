@@ -1,0 +1,117 @@
+---
+#This playbook is expected to run from laptop.
+#ansible-playbook -u root 0-bastion-deploy.yml -k
+- hosts: localhost
+  gather_facts: no
+
+  tasks:
+    - name: Login to RHV
+      ovirt_auth:
+        url: https://rhvm.rnelson-demo.com/ovirt-engine/api
+        insecure: yes
+        username: admin@internal
+        password: RedHat1!
+
+    - name: Create VMs
+      ovirt_vms:
+        auth: "{{ ovirt_auth }}"
+        cluster: Default
+        template: rhel-7.6-kvm-template
+        storage_domain: vmstore
+        name: "{{ item }}"
+        state: running
+        instance_type: Small
+        nics:
+          - name: nic1
+            profile_name: ovirtmgmt
+        cloud_init:
+          host_name: "{{ item }}.rnelson-demo.com"
+          user_name: root
+          root_password: RedHat1!
+          authorized_ssh_keys: ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDmn8iPMGUA5Pf+5Rl+APPs0IGdFlmbSm04/bn2LXBIE3kF4tH/MvZdcJCQEKegC/bSicqEPz8BYFkNPNqqY52bVwIbneHIPraJDD8HhGiIY/A32mGjLr4rZ+FBo14Hy/rkq8WdmxbrrSX61zHEwHEC369jH43RzvICjdlAzHwO2+cnkteKCcRkAFrcSlgyrr0tt9HTUMVB7FPBFrqplxZGLuGlxdRSOA9vAupaJ44VBPtUA7hEaUyK9DQBWIKoBjdM/S/n8ySq3zCGeh6oeSXwD605VPDRSre5NWwvtO86eBOdT00WHtGhvalij4UX2s3zYN8DyRqxS3VHjKku0gCZ rnelson@laptop.rnelson-demo.com
+          nic_name: eth0
+          nic_on_boot: true
+          nic_boot_protocol: dhcp
+
+          custom_script: |
+            runcmd:
+              - hostnamectl set-hostname {{ item }}.rnelson-demo.com
+              - yum -y remove cloud-init
+        wait: true
+      with_items:
+         - bastion
+
+    - name: Cleanup RHV auth token
+      ovirt_auth:
+        ovirt_auth: "{{ ovirt_auth }}"
+        state: absent
+
+# need to add git to download rickmanley-lab github.
+- hosts: bastion
+  name: Prepare Bastion host for OCP/OCS Install
+  gather_facts: yes
+  vars:
+    activation_key: rnelson-rhhi
+    rhn_org_id: 1979710
+    pool: 8a85f9833e1404a9013e3cddf95a0599
+    repos:
+    repo_list:
+      - rhel-7-server-rpms
+      - rhel-7-server-extras-rpms
+      - rhel-7-server-ose-3.11-rpms
+      - rhel-7-server-ansible-2.6-rpms
+      - rhel-7-server-rhv-4.2-manager-rpms # contains ovirt-ansible-roles, python-ovirt-engine-sdk4
+
+  tasks:
+  - name: Copy /etc/hosts file
+    copy:
+      src: etc-hosts
+      dest: /etc/hosts
+      mode: 0644
+    tags: pre
+
+  - name: ensure SSH key is generated
+    command: ssh-keygen -t rsa -f /root/.ssh/id_rsa -N ''
+    args:
+      creates: /root/.ssh/id_rsa
+
+  - name: Install SSH public key
+    authorized_key:
+      user: root
+      key: "{{ lookup('file', 'rnelson-homelab.pub') }}"
+    tags: keys
+
+  - name: Register
+    command: subscription-manager register --activationkey={{activation_key}} --org={{rhn_org_id}}
+    ignore_errors: yes #Added this because I'm using the Employee SKU, and the auto attach may fail
+    tags: register
+
+  - name: Disable All and Enable Specific Repositories
+    block:
+    - set_fact:
+        repos: "{{ repo_list | join(' --enable=') }}"
+    - debug:
+        var: repos
+    - name: Enable repos for RHEL7
+      command: subscription-manager repos --disable="*" --enable={{ repos }}
+    tags: register
+
+  - name: Install misc packages
+    package:
+      name: screen,bind-utils,vim-enhanced,libselinux-python,ansible,git,python-ovirt-engine-sdk4,ovirt-ansible-roles
+      state: present
+    tags: rpms
+
+  - name: Copy Ansible hosts file
+    copy:
+      src: ansible-hosts
+      dest: /etc/ansible/hosts
+      mode: 0644
+    tags: pre
+
+  - name: Copy ansible.cfg file
+    copy:
+      src: ansible.cfg
+      dest: /etc/ansible/ansible.cfg
+      mode: 0644
+    tags: pre

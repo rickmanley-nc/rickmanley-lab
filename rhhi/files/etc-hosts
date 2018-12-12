@@ -1,0 +1,7 @@
+127.0.0.1   localhost localhost.localdomain localhost4 localhost4.localdomain4
+::1         localhost localhost.localdomain localhost6 localhost6.localdomain6
+
+10.0.0.21 rhhi1-gluster.rnelson-demo.com rhhi1-gluster
+10.0.0.22 rhhi2-gluster.rnelson-demo.com rhhi2-gluster
+10.0.0.23 rhhi3-gluster.rnelson-demo.com rhhi3-gluster
+192.168.1.15 rhvm.rnelson-demo.com rhvm

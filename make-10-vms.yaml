@@ -1,0 +1,54 @@
+#yum --enablerepo=rhel-7-server-rhv-4.2-manager-rpms install python-ovirt-engine-sdk4
+---
+- hosts: localhost
+  gather_facts: no
+
+  tasks:
+    - name: Login to RHV
+      ovirt_auth:
+        url: https://rhvm.rnelson-demo.com/ovirt-engine/api
+        insecure: yes
+        username: admin@internal
+        password: RedHat1!
+
+    - name: Create VMs
+      ovirt_vms:
+        auth: "{{ ovirt_auth }}"
+        cluster: Default
+        template: rhel-7.6-kvm-template
+        storage_domain: vmstore
+        name: "{{ item }}"
+        state: running
+        instance_type: Tiny
+        nics:
+          - name: nic1
+            profile_name: ovirtmgmt
+        cloud_init:
+          host_name: "{{ item }}.rnelson-demo.com"
+          user_name: root
+          root_password: RedHat1!
+          nic_name: eth0
+          nic_on_boot: true
+          nic_boot_protocol: dhcp
+
+          custom_script: |
+            runcmd:
+              - hostnamectl set-hostname {{ item }}.rnelson-demo.com
+              - yum -y remove cloud-init
+        wait: true
+      with_items:
+         - vm01
+         - vm02
+         - vm03
+         - vm04
+         - vm05
+         - vm06
+         - vm07
+         - vm08
+         - vm09
+         - vm10
+
+    - name: Cleanup RHV auth token
+      ovirt_auth:
+        ovirt_auth: "{{ ovirt_auth }}"
+        state: absent

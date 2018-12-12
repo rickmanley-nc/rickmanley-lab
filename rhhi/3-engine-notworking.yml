@@ -1,0 +1,20 @@
+---
+#/var/lib/ovirt-hosted-engine-setup/answers/answers.conf
+- hosts: rhhi1.rnelson-demo.com
+  name: Deploy RHHI Storage
+
+  tasks:
+    - name: copy hosted-engine answer file
+      copy:
+        src: files/he-answers.cfg
+        dest: /tmp/answer.cfg
+        owner: root
+        group: root
+        mode: 0600
+
+    - name: run hosted-engine
+      shell: hosted-engine --deploy --config-append=/root/answer.cfg < /dev/null
+      register: hostedengine
+
+    - name: debug hosted-engine
+      debug: msg="{{ hostedengine }}"

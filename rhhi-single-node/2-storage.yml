@@ -1,0 +1,21 @@
+---
+- hosts: rhhi1.rnelson-demo.com
+  name: Deploy RHHI Storage
+
+  tasks:
+    - name: copy gdeploy.conf
+      copy:
+        src: files/gdeployConfig.conf
+        dest: /tmp/gdeploy.conf
+        owner: root
+        group: root
+        mode: 0600
+
+    - name: configure gluster (pulled from /var/lib/ovirt-hosted-engine-setup/gdeploy/gdeployConfig.conf)
+      command: gdeploy -c /tmp/gdeploy.conf -vv --trace
+      register: gdeploy_run
+
+    - name: debug gdeploy.conf
+      debug: msg="{{ gdeploy_run }}"
+
+    

@@ -1,0 +1,50 @@
+---
+- hosts: localhost
+  name: IPMI commands against RHHI host
+  gather_facts: no
+  vars:
+    power_name: changeme
+    power_user: rnelson
+    power_pass: RedHat1!
+
+  tasks:
+  - name: Send ON
+    ipmi_power:
+      name: "{{ power_name }}"
+      user: "{{ power_user }}"
+      password: "{{ power_pass }}"
+      state: on
+    tags: poweron
+
+  - name: Send OFF
+    ipmi_power:
+      name: "{{ power_name }}"
+      user: "{{ power_user }}"
+      password: "{{ power_pass }}"
+      state: off
+    tags: poweroff
+
+  - name: Send SHUTDOWN
+    ipmi_power:
+      name: "{{ power_name }}"
+      user: "{{ power_user }}"
+      password: "{{ power_pass }}"
+      state: shutdown
+    tags: shutdown
+
+  - name: Get Status
+    command: ipmitool -H {{ item }} -I lanplus -U {{power_user}} -P {{power_pass}} chassis power status
+    register: ipmistatus
+    with_items:
+      - 192.168.5.11
+      - 192.168.5.12
+      - 192.168.5.13
+    tags: status
+
+  - debug: var=ipmistatus
+    tags: status
+
+  - name: Print status
+    debug: msg="item.item={{item.item}}, item.stdout={{item.stdout}}"
+    with_items: "{{ ipmistatus.results }}"
+    tags: status

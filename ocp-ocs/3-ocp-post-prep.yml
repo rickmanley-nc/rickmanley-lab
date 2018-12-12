@@ -1,0 +1,72 @@
+---
+#This playbook is intended to run on the bastion server.
+#ansible-playbook 3-ocp-post-prep.yml
+- hosts: ocp
+  name: Prepare nodes prior to OCP 3.11 Install
+  gather_facts: yes
+  vars:
+    activation_key: rnelson-rhhi
+    rhn_org_id: 1979710
+    pool: 8a85f9833e1404a9013e3cddf95a0599
+    idm_register_username: admin
+    idm_register_password: RedHat1!
+    repos:
+    repo_list:
+      - rhel-7-server-rpms
+      - rhel-7-server-extras-rpms
+      - rhel-7-server-ose-3.11-rpms
+      - rhel-7-server-ansible-2.6-rpms
+
+  tasks:
+  - name: Install Bastion's root SSH public key
+    authorized_key:
+      user: root
+      key: "{{ lookup('file', '~/.ssh/id_rsa.pub') }}"
+    tags: keys
+
+  - name: Install SSH public key
+    authorized_key:
+      user: root
+      key: "{{ lookup('file', 'rnelson-homelab.pub') }}"
+    tags: keys
+
+  - name: Register
+    command: subscription-manager register --activationkey={{activation_key}} --org={{rhn_org_id}}
+    ignore_errors: yes #Added this because I'm using the Employee SKU, and the auto attach may fail
+    tags: register
+
+  - name: Disable All and Enable Specific Repositories
+    block:
+    - set_fact:
+        repos: "{{ repo_list | join(' --enable=') }}"
+    - debug:
+        var: repos
+    - name: Enable repos for RHEL7
+      command: subscription-manager repos --disable="*" --enable={{ repos }}
+    tags: register
+
+  - name: Install misc packages
+    package:
+      name: wget,git,net-tools,bind-utils,yum-utils,iptables-services,bridge-utils,bash-completion,kexec-tools,sos,psacct,openshift-ansible,docker-1.13.1,ipa-client
+      state: present
+    tags: rpms
+
+  - name: Upgrade all packages
+    yum:
+      name: '*'
+      state: latest
+
+  - name: Reboot
+    shell: "sleep 5 && reboot"
+    async: 1
+    poll: 0
+
+  - name: Wait for the reboot to complete
+    wait_for_connection:
+      connect_timeout: 20
+      sleep: 5
+      delay: 5
+      timeout: 300
+
+#  - name: Enroll with IdM Server
+#    command: ipa-client-install -U --mkhomedir -p {{idm_register_username}} -w {{idm_register_password}}

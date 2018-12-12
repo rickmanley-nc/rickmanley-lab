@@ -1,0 +1,15 @@
+---
+- hosts: changeme
+  name: Configure with IdM
+  vars:
+    idm_register_username: admin
+    idm_register_password: RedHat1!
+
+  tasks:
+    - name: Ensure ipa-client is installed
+      package:
+        name: ipa-client
+        state: present
+
+    - name: Enroll with IdM Server
+      command: ipa-client-install -U --enable-dns-updates --ssh-trust-dns --mkhomedir -p {{idm_register_username}} -w {{idm_register_password}}

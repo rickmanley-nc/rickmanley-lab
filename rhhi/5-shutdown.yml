@@ -1,0 +1,63 @@
+---
+- hosts: rhhi
+  ignore_errors: yes
+  gather_facts: no
+
+  tasks:
+    - name: Set global maintenance for HostedEngine
+      command: hosted-engine --set-maintenance --mode=global
+      run_once: true
+
+- hosts: localhost
+  gather_facts: no
+  tasks:
+    - name: Check if RHVM is up and running
+      uri:
+        validate_certs: no
+        url: https://rhvm.rnelson-demo.com
+      ignore_errors: yes
+      register: uri_result
+    - block:
+      - name: Login to RHV
+        ovirt_auth:
+          url: https://rhvm.rnelson-demo.com/ovirt-engine/api
+          insecure: yes
+          username: admin@internal
+          password: RedHat1!
+      - name: List all VMs
+        ovirt_vms_facts:
+          auth: "{{ ovirt_auth }}"
+      - name: Shutdown all VMs except HostedEngine
+        ovirt_vms:
+          state: stopped
+          wait: no
+          name: "{{ item.name }}"
+          auth: "{{ ovirt_auth }}"
+        when: "'HostedEngine' not in item.name"
+        with_items:
+          - "{{ ovirt_vms }}"
+      - name: Cleanup RHV auth token
+        ovirt_auth:
+          state: absent
+          ovirt_auth: "{{ ovirt_auth }}"
+    # end block
+      when: not uri_result.failed
+
+- hosts: rhhi
+  ignore_errors: yes
+  gather_facts: no
+  tasks:
+    - name: Shutdown HostedEngine VM
+      command: hosted-engine --vm-shutdown
+    - name: Wait for all VMs to stop
+      command: virsh -r list --name
+      register: vms
+      until: vms.stdout_lines | length == 0
+      retries: 30
+      delay: 10
+#    - name: Stop the Gluster volumes
+#      command: gluster vol stop {{ item }}
+#      run_once: true
+#      with_items: [ssdvmstore,nvmevmstore,engine]
+#    - name: Shutdown and poweroff servers
+#      command: shutdown -t 10 -P

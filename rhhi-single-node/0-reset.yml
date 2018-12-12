@@ -1,0 +1,43 @@
+---
+- hosts: rhhi1.rnelson-demo.com
+  gather_facts: no
+  ignore_errors: yes
+
+  tasks:
+  - name: "Stop the Gluster volume"
+    gluster_volume: name={{ item }} state=stopped
+    run_once: yes
+    with_items: [ engine, nvme-vmstore, iscsi-vmstore ]
+
+  - name: "Delete the Gluster volume"
+    gluster_volume: name={{ item }} state=absent
+    run_once: yes
+    with_items: [ engine, nvme-vmstore, iscsi-vmstore ]
+
+  - name: "Remove brick_dirs"
+    file: path=/gluster_bricks/{{ item }}/{{ item }}/ state=absent
+    with_items: [ engine, nvme-vmstore, iscsi-vmstore ]
+
+  - name: "Unmount the bricks"
+    mount: path=/gluster_bricks/{{ item }} state=absent
+    with_items: [ engine, nvme-vmstore, iscsi-vmstore ]
+
+  - name: "Dissolve the Trusted Storage Pool"
+    command: gluster peer detach {{ item }}
+    with_items: [ rhhi1-gluster.rnelson-demo.com, rhhi2-gluster.rnelson-demo.com, rhhi3-gluster.rnelson-demo.com ]
+
+  - name: "Remove the VGs"
+    command: vgremove {{ item }} --force
+    with_items: [ gluster_vg_nvme0n1 ]
+
+  - name: "Remove the PVs"
+    command: pvremove /dev/{{ item }} --force
+    with_items: [ nvme0n1, sdb ]
+
+  - name: "Wipe the drives"
+    command: wipefs -af /dev/{{ item }}
+    with_items: [ nvme0n1, sdb ]
+
+  - name: "Clean disks the hard way"
+    command: dd if=/dev/zero of=/dev/{{ item }} bs=1M count=10
+    with_items: [ nvme0n1, sdb ]

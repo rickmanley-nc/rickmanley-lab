@@ -1,0 +1,333 @@
+---
+#the template has already been created. It uses local host storage for OS disk.
+#All attached disks to VMs are in an NFS storage domain from a Synology diskstation.
+#ansible-playbook 2-ovirt-vm-infra-deploy.yml
+#NEED TO ADD bastion ssh key.
+- name: oVirt VM infra
+  hosts: localhost
+  connection: local
+  gather_facts: false
+
+  vars_files:
+    - ovirt-vm-infra-vars.yaml
+
+  tasks:
+    - name: Login to RHV
+      ovirt_auth:
+        url: https://rhvm.rnelson-demo.com/ovirt-engine/api
+        insecure: yes
+        username: admin@internal
+        password: RedHat1!
+
+    - name: Create Master VMs
+      ovirt_vms:
+        auth: "{{ ovirt_auth }}"
+        cluster: Default
+        template: rhel-7.6-kvm-template
+        storage_domain: vmstore
+        name: "{{ item }}"
+        state: running
+        instance_type: Medium
+        high_availability: yes
+        nics:
+          - name: nic1
+            profile_name: ovirtmgmt
+        cloud_init:
+          host_name: "{{ item }}.rnelson-demo.com"
+          user_name: root
+          root_password: RedHat1!
+          authorized_ssh_keys: ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDmn8iPMGUA5Pf+5Rl+APPs0IGdFlmbSm04/bn2LXBIE3kF4tH/MvZdcJCQEKegC/bSicqEPz8BYFkNPNqqY52bVwIbneHIPraJDD8HhGiIY/A32mGjLr4rZ+FBo14Hy/rkq8WdmxbrrSX61zHEwHEC369jH43RzvICjdlAzHwO2+cnkteKCcRkAFrcSlgyrr0tt9HTUMVB7FPBFrqplxZGLuGlxdRSOA9vAupaJ44VBPtUA7hEaUyK9DQBWIKoBjdM/S/n8ySq3zCGeh6oeSXwD605VPDRSre5NWwvtO86eBOdT00WHtGhvalij4UX2s3zYN8DyRqxS3VHjKku0gCZ rnelson@laptop.rnelson-demo.com
+          nic_name: eth0
+          nic_on_boot: true
+          nic_boot_protocol: dhcp
+
+          custom_script: |
+            runcmd:
+              - hostnamectl set-hostname {{ item }}.rnelson-demo.com
+#              - yum -y remove cloud-init
+        wait: true
+      with_items:
+         - ocp-master1
+         - ocp-master2
+         - ocp-master3
+
+    - name: Create and attach disks for Masters
+      ovirt_disk:
+        auth: "{{ ovirt_auth }}"
+        vm_name: "{{ item.vm_name }}"
+        storage_domain: "nfs-synology"
+        name: "{{ item.name }}-{{ item.id }}"
+        size: "{{ item.size }}"
+        format: cow
+        interface: virtio
+        wait: true
+      with_items:
+        - { vm_name: 'ocp-master1', name: 'docker_disk', id: '1', size: '15GiB' }
+        - { vm_name: 'ocp-master1', name: 'etcd_disk', id: '2', size: '25GiB' }
+        - { vm_name: 'ocp-master2', name: 'docker_disk', id: '1', size: '15GiB' }
+        - { vm_name: 'ocp-master2', name: 'etcd_disk', id: '2', size: '25GiB' }
+        - { vm_name: 'ocp-master3', name: 'docker_disk', id: '1', size: '15GiB' }
+        - { vm_name: 'ocp-master3', name: 'etcd_disk', id: '2', size: '25GiB' }
+
+    - name: Create Infra and App VMs
+      ovirt_vms:
+        auth: "{{ ovirt_auth }}"
+        cluster: Default
+        template: rhel-7.6-kvm-template
+        storage_domain: vmstore
+        name: "{{ item }}"
+        state: running
+        instance_type: Medium
+        nics:
+          - name: nic1
+            profile_name: ovirtmgmt
+        cloud_init:
+          host_name: "{{ item }}.rnelson-demo.com"
+          user_name: root
+          root_password: RedHat1!
+          authorized_ssh_keys: ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDmn8iPMGUA5Pf+5Rl+APPs0IGdFlmbSm04/bn2LXBIE3kF4tH/MvZdcJCQEKegC/bSicqEPz8BYFkNPNqqY52bVwIbneHIPraJDD8HhGiIY/A32mGjLr4rZ+FBo14Hy/rkq8WdmxbrrSX61zHEwHEC369jH43RzvICjdlAzHwO2+cnkteKCcRkAFrcSlgyrr0tt9HTUMVB7FPBFrqplxZGLuGlxdRSOA9vAupaJ44VBPtUA7hEaUyK9DQBWIKoBjdM/S/n8ySq3zCGeh6oeSXwD605VPDRSre5NWwvtO86eBOdT00WHtGhvalij4UX2s3zYN8DyRqxS3VHjKku0gCZ rnelson@laptop.rnelson-demo.com
+          nic_name: eth0
+          nic_on_boot: true
+          nic_boot_protocol: dhcp
+
+          custom_script: |
+            runcmd:
+              - hostnamectl set-hostname {{ item }}.rnelson-demo.com
+#              - yum -y remove cloud-init
+        wait: true
+      with_items:
+         - ocp-infra1
+         - ocp-infra2
+         - ocp-infra3
+         - ocp-app1
+         - ocp-app2
+         - ocp-app3
+
+    - name: Create and attach disks for Infra and App nodes
+      ovirt_disk:
+        auth: "{{ ovirt_auth }}"
+        vm_name: "{{ item.vm_name }}"
+        storage_domain: "nfs-synology"
+        name: "{{ item.name }}-{{ item.id }}"
+        size: "{{ item.size }}"
+        format: cow
+        interface: virtio
+        wait: true
+      with_items:
+        - { vm_name: 'ocp-infra1', name: 'docker_disk', id: '1', size: '15GiB' }
+        - { vm_name: 'ocp-infra2', name: 'docker_disk', id: '1', size: '15GiB' }
+        - { vm_name: 'ocp-infra3', name: 'docker_disk', id: '1', size: '15GiB' }
+        - { vm_name: 'ocp-app1', name: 'docker_disk', id: '1', size: '15GiB' }
+        - { vm_name: 'ocp-app2', name: 'docker_disk', id: '1', size: '15GiB' }
+        - { vm_name: 'ocp-app3', name: 'docker_disk', id: '1', size: '15GiB' }
+
+    - name: Create Load Balancer VM
+      ovirt_vms:
+        auth: "{{ ovirt_auth }}"
+        cluster: Default
+        template: rhel-7.6-kvm-template
+        storage_domain: vmstore
+        name: "{{ item }}"
+        state: running
+        instance_type: Tiny
+        nics:
+          - name: nic1
+            profile_name: ovirtmgmt
+        cloud_init:
+          host_name: "{{ item }}.rnelson-demo.com"
+          user_name: root
+          root_password: RedHat1!
+          authorized_ssh_keys: ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDmn8iPMGUA5Pf+5Rl+APPs0IGdFlmbSm04/bn2LXBIE3kF4tH/MvZdcJCQEKegC/bSicqEPz8BYFkNPNqqY52bVwIbneHIPraJDD8HhGiIY/A32mGjLr4rZ+FBo14Hy/rkq8WdmxbrrSX61zHEwHEC369jH43RzvICjdlAzHwO2+cnkteKCcRkAFrcSlgyrr0tt9HTUMVB7FPBFrqplxZGLuGlxdRSOA9vAupaJ44VBPtUA7hEaUyK9DQBWIKoBjdM/S/n8ySq3zCGeh6oeSXwD605VPDRSre5NWwvtO86eBOdT00WHtGhvalij4UX2s3zYN8DyRqxS3VHjKku0gCZ rnelson@laptop.rnelson-demo.com
+          nic_name: eth0
+          nic_on_boot: true
+          nic_boot_protocol: dhcp
+
+          custom_script: |
+            runcmd:
+              - hostnamectl set-hostname {{ item }}.rnelson-demo.com
+#              - yum -y remove cloud-init
+        wait: true
+      with_items:
+         - ocp-lb
+
+    - name: Create RHHI-1 Affinity Group
+      ovirt_affinity_group:
+        auth: "{{ ovirt_auth }}"
+        name: rhhi-1-ag
+        cluster: "{{ rhv_cluster }}"
+        vm_enforcing: true
+        vm_rule: positive
+        host_enforcing: true
+        host_rule: positive
+        vms:
+          - ocp-master1
+          - ocp-infra1
+          - ocp-app1
+        hosts:
+          - rhhi1.rnelson-demo.com
+        wait: yes
+
+    - name: Create RHHI-2 Affinity Group
+      ovirt_affinity_group:
+        auth: "{{ ovirt_auth }}"
+        name: rhhi-2-ag
+        cluster: "{{ rhv_cluster }}"
+        vm_enforcing: true
+        vm_rule: positive
+        host_enforcing: true
+        host_rule: positive
+        vms:
+          - ocp-master2
+          - ocp-infra2
+          - ocp-app2
+        hosts:
+          - rhhi2.rnelson-demo.com
+        wait: yes
+
+    - name: Create RHHI-3 Affinity Group
+      ovirt_affinity_group:
+        auth: "{{ ovirt_auth }}"
+        name: rhhi-3-ag
+        cluster: "{{ rhv_cluster }}"
+        vm_enforcing: true
+        vm_rule: positive
+        host_enforcing: true
+        host_rule: positive
+        vms:
+          - ocp-master3
+          - ocp-infra3
+          - ocp-app3
+        hosts:
+          - rhhi3.rnelson-demo.com
+        wait: yes
+
+#test this to restart.. next_run requires a change in the VM metadata?
+    - name: Stop VMs to force rebalance/pinning to host
+      ovirt_vms:
+        auth: "{{ ovirt_auth }}"
+        cluster: Default
+        name: "{{ item }}"
+        state: next_run
+      with_items:
+        - ocp-master1
+        - ocp-master2
+        - ocp-master3
+        - ocp-infra1
+        - ocp-infra2
+        - ocp-infra3
+        - ocp-app1
+        - ocp-app2
+        - ocp-app3
+
+#    - name: Stop VMs to force rebalance/pinning to host, rhevm module missing
+#      ovirt_vms:
+#        auth: "{{ ovirt_auth }}"
+#        cluster: Default
+#        name: "{{ item }}"
+#        state: stopped
+#      with_items:
+#        - ocp-master1
+#        - ocp-master2
+#        - ocp-master3
+#        - ocp-infra1
+#        - ocp-infra2
+#        - ocp-infra3
+#        - ocp-app1
+#        - ocp-app2
+#        - ocp-app3
+#
+#    - name: Start VMs to force rebalance/pinning to host, rhevm module missing
+#      ovirt_vms:
+#        auth: "{{ ovirt_auth }}"
+#        cluster: Default
+#        name: "{{ item }}"
+#        state: running
+#      with_items:
+#        - ocp-master1
+#        - ocp-master2
+#        - ocp-master3
+#        - ocp-infra1
+#        - ocp-infra2
+#        - ocp-infra3
+#        - ocp-app1
+#        - ocp-app2
+#        - ocp-app3
+
+  post_tasks:
+    - name: Logout from oVirt
+      ovirt_auth:
+        state: absent
+        ovirt_auth: "{{ ovirt_auth }}"
+      tags:
+        - always
+#This playbook is intended to run on the bastion server.
+#ansible-playbook 3-ocp-post-prep.yml
+- hosts: ocp
+  name: Prepare nodes prior to OCP 3.11 Install
+  gather_facts: yes
+  vars:
+    activation_key: rnelson-rhhi
+    rhn_org_id: 1979710
+    pool: 8a85f9833e1404a9013e3cddf95a0599
+    idm_register_username: admin
+    idm_register_password: RedHat1!
+    repos:
+    repo_list:
+      - rhel-7-server-rpms
+      - rhel-7-server-extras-rpms
+      - rhel-7-server-ose-3.11-rpms
+      - rhel-7-server-ansible-2.6-rpms
+
+  tasks:
+  - name: Install Bastion's root SSH public key
+    authorized_key:
+      user: root
+      key: "{{ lookup('file', '~/.ssh/id_rsa.pub') }}"
+    tags: keys
+
+  - name: Install SSH public key
+    authorized_key:
+      user: root
+      key: "{{ lookup('file', 'rnelson-homelab.pub') }}"
+    tags: keys
+
+  - name: Register
+    command: subscription-manager register --activationkey={{activation_key}} --org={{rhn_org_id}}
+    ignore_errors: yes #Added this because I'm using the Employee SKU, and the auto attach may fail
+    tags: register
+
+  - name: Disable All and Enable Specific Repositories
+    block:
+    - set_fact:
+        repos: "{{ repo_list | join(' --enable=') }}"
+    - debug:
+        var: repos
+    - name: Enable repos for RHEL7
+      command: subscription-manager repos --disable="*" --enable={{ repos }}
+    tags: register
+
+  - name: Install misc packages
+    package:
+      name: wget,git,net-tools,bind-utils,yum-utils,iptables-services,bridge-utils,bash-completion,kexec-tools,sos,psacct,openshift-ansible,docker-1.13.1,ipa-client
+      state: present
+    tags: rpms
+
+  - name: Upgrade all packages
+    yum:
+      name: '*'
+      state: latest
+
+  - name: Reboot
+    shell: "sleep 5 && reboot"
+    async: 1
+    poll: 0
+
+  - name: Wait for the reboot to complete
+    wait_for_connection:
+      connect_timeout: 20
+      sleep: 5
+      delay: 5
+      timeout: 300
+
+#  - name: Enroll with IdM Server
+#    command: ipa-client-install -U --mkhomedir -p {{idm_register_username}} -w {{idm_register_password}}

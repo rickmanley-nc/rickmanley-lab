@@ -1,0 +1,62 @@
+---
+- hosts: localhost
+  gather_facts: no
+
+  tasks:
+    - name: Login to RHV
+      ovirt_auth:
+        url: https://rhvm.rnelson-demo.com/ovirt-engine/api
+        insecure: yes
+        username: admin@internal
+        password: RedHat1!
+
+    - name: add gluster
+      ovirt_networks:
+        auth: "{{ ovirt_auth }}"
+        data_center: Default
+        name: gluster
+        vm_network: false
+        clusters:
+        - name: Default
+          gluster: true
+          migration: true
+          required: false
+        state: present
+
+    - name: Add gluster network to eno2
+      ovirt_host_networks:
+        auth: "{{ ovirt_auth }}"
+        name: rhhi1.rnelson-demo.com
+        interface: eno2
+        networks:
+          - name: gluster
+            boot_protocol: static
+            address: 10.0.0.21
+            netmask: 255.255.255.0
+
+    - name: Add gluster network to eno2
+      ovirt_host_networks:
+        auth: "{{ ovirt_auth }}"
+        name: rhhi2.rnelson-demo.com
+        interface: eno2
+        networks:
+          - name: gluster
+            boot_protocol: static
+            address: 10.0.0.22
+            netmask: 255.255.255.0
+
+    - name: Add gluster network to eno2
+      ovirt_host_networks:
+        auth: "{{ ovirt_auth }}"
+        name: rhhi3.rnelson-demo.com
+        interface: eno2
+        networks:
+          - name: gluster
+            boot_protocol: static
+            address: 10.0.0.23
+            netmask: 255.255.255.0
+
+    - name: Cleanup RHV auth token
+      ovirt_auth:
+        ovirt_auth: "{{ ovirt_auth }}"
+        state: absent
