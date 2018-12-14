@@ -1,15 +1,11 @@
 #To do:
 
+- deploy idm to have ldap provider for ocp
+- clean up ovirt-vm-infra-vars.yml
+- have play in 1-ovirt-vm-infra-deploy that copies root ssh key from bastion to all ocp nodes. This way we can just run 0 and 1 playbook from laptop (no need to run 0 from laptop... then switch to bastion to run 1)
 - playbook that takes snapshots of vm names
 - playbook that unregisters vms and then deletes them
-- chapter 3.8 docker storage setup.
-docker_disk /dev/vdb
-etcd_disk /dev/vdc
-compare cloud_init_script : https://github.com/openshift/openshift-ansible-contrib/blob/master/reference-architecture/rhv-ansible/ovirt-infra-vars.yaml
-
-and use their setup for vdb and vdc
-
-
+- etcd_disk setup?
 - disable pre-checks (memory/storage constraints likely)
 - what to do with lb.rnelson-demo.com?
 - inventory

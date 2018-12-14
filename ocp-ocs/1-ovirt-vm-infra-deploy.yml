@@ -244,6 +244,7 @@
         - always
 
 - hosts: ocp
+  name: wait for all hosts to be reachable
   gather_facts: no
 
   tasks:
