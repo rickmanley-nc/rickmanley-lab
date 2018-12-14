@@ -1,15 +1,15 @@
 ---
 #the template has already been created. It uses local host storage for OS disk.
 #All attached disks to VMs are in an NFS storage domain from a Synology diskstation.
-#ansible-playbook 2-ovirt-vm-infra-deploy.yml
-#NEED TO ADD bastion ssh key.
+# This playbook is to be run on the bastion server
+#ansible-playbook -u root 1-ovirt-vm-infra-deploy.yml -k
 - name: oVirt VM infra
   hosts: localhost
   connection: local
   gather_facts: false
 
   vars_files:
-    - ovirt-vm-infra-vars.yaml
+    - ovirt-vm-infra-vars.yml
 
   tasks:
     - name: Login to RHV
@@ -23,7 +23,7 @@
       ovirt_vms:
         auth: "{{ ovirt_auth }}"
         cluster: Default
-        template: rhel-7.6-kvm-template
+        template: rhel-7.6-kvm
         storage_domain: vmstore
         name: "{{ item }}"
         state: running
@@ -73,7 +73,7 @@
       ovirt_vms:
         auth: "{{ ovirt_auth }}"
         cluster: Default
-        template: rhel-7.6-kvm-template
+        template: rhel-7.6-kvm
         storage_domain: vmstore
         name: "{{ item }}"
         state: running
@@ -125,7 +125,7 @@
       ovirt_vms:
         auth: "{{ ovirt_auth }}"
         cluster: Default
-        template: rhel-7.6-kvm-template
+        template: rhel-7.6-kvm
         storage_domain: vmstore
         name: "{{ item }}"
         state: running
@@ -201,13 +201,12 @@
           - rhhi3.rnelson-demo.com
         wait: yes
 
-#test this to restart.. next_run requires a change in the VM metadata?
-    - name: Stop VMs to force rebalance/pinning to host
+    - name: Stop VMs to force rebalance/pinning to host, rhevm module missing
       ovirt_vms:
         auth: "{{ ovirt_auth }}"
         cluster: Default
         name: "{{ item }}"
-        state: next_run
+        state: stopped
       with_items:
         - ocp-master1
         - ocp-master2
@@ -219,39 +218,22 @@
         - ocp-app2
         - ocp-app3
 
-#    - name: Stop VMs to force rebalance/pinning to host, rhevm module missing
-#      ovirt_vms:
-#        auth: "{{ ovirt_auth }}"
-#        cluster: Default
-#        name: "{{ item }}"
-#        state: stopped
-#      with_items:
-#        - ocp-master1
-#        - ocp-master2
-#        - ocp-master3
-#        - ocp-infra1
-#        - ocp-infra2
-#        - ocp-infra3
-#        - ocp-app1
-#        - ocp-app2
-#        - ocp-app3
-#
-#    - name: Start VMs to force rebalance/pinning to host, rhevm module missing
-#      ovirt_vms:
-#        auth: "{{ ovirt_auth }}"
-#        cluster: Default
-#        name: "{{ item }}"
-#        state: running
-#      with_items:
-#        - ocp-master1
-#        - ocp-master2
-#        - ocp-master3
-#        - ocp-infra1
-#        - ocp-infra2
-#        - ocp-infra3
-#        - ocp-app1
-#        - ocp-app2
-#        - ocp-app3
+    - name: Start VMs to force rebalance/pinning to host, rhevm module missing
+      ovirt_vms:
+        auth: "{{ ovirt_auth }}"
+        cluster: Default
+        name: "{{ item }}"
+        state: running
+      with_items:
+        - ocp-master1
+        - ocp-master2
+        - ocp-master3
+        - ocp-infra1
+        - ocp-infra2
+        - ocp-infra3
+        - ocp-app1
+        - ocp-app2
+        - ocp-app3
 
   post_tasks:
     - name: Logout from oVirt
@@ -260,8 +242,14 @@
         ovirt_auth: "{{ ovirt_auth }}"
       tags:
         - always
-#This playbook is intended to run on the bastion server.
-#ansible-playbook 3-ocp-post-prep.yml
+
+- hosts: ocp
+  gather_facts: no
+
+  tasks:
+    - name: Wait 600 seconds for target connection to become reachable/usable
+      wait_for_connection:
+
 - hosts: ocp
   name: Prepare nodes prior to OCP 3.11 Install
   gather_facts: yes
@@ -277,6 +265,7 @@
       - rhel-7-server-extras-rpms
       - rhel-7-server-ose-3.11-rpms
       - rhel-7-server-ansible-2.6-rpms
+#      - rh-gluster-3-client-for-rhel-7-server-rpms
 
   tasks:
   - name: Install Bastion's root SSH public key
@@ -309,6 +298,7 @@
   - name: Install misc packages
     package:
       name: wget,git,net-tools,bind-utils,yum-utils,iptables-services,bridge-utils,bash-completion,kexec-tools,sos,psacct,openshift-ansible,docker-1.13.1,ipa-client
+#glusterfs-fuse
       state: present
     tags: rpms
 
@@ -328,6 +318,24 @@
       sleep: 5
       delay: 5
       timeout: 300
+
+  - name: "Setup docker-storage-setup"
+    copy:
+      content: |
+        STORAGE_DRIVER=devicemapper
+        DEVS=/dev/vdb
+        VG=docker-vg
+        CONTAINER_THINPOOL=docker_pool
+      dest: /etc/sysconfig/docker-storage-setup
+
+  - name: "Run docker-storage-setup"
+    command: docker-storage-setup
+
+  - name: "Start and enable docker"
+    systemd:
+      unit: docker.service
+      state: restarted
+      enabled: yes
 
 #  - name: Enroll with IdM Server
 #    command: ipa-client-install -U --mkhomedir -p {{idm_register_username}} -w {{idm_register_password}}

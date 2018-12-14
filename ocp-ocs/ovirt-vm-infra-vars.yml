@@ -4,7 +4,7 @@ data_center_name: Default
 rhv_cluster: Default
 rhv_storagedomain_local: vmstore
 rhv_storagedomain_synology: nfs-synology
-template_name: rhel-7.6-kvm-template
+template_name: rhel-7.6-kvm
 
 ##########################
 # Other top scope vars

@@ -1,10 +1,7 @@
 #To do:
 
-- I combined 0+1 and 2+3. Next run should be 0+2.
 - playbook that takes snapshots of vm names
-- upload rickmanley-lab to github.
-- update 1-bastion-prep.yml with git clone of rickmanley-lab repo.
-- update 2-ovirt-vm-infra-deploy.yml with bastion's ssh key.
+- playbook that unregisters vms and then deletes them
 - chapter 3.8 docker storage setup.
 docker_disk /dev/vdb
 etcd_disk /dev/vdc
