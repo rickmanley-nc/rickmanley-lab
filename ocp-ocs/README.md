@@ -1,5 +1,11 @@
 #To do:
 
+
+www.dmtf.org/standards/redfish
+look at http:192.168.5.11/redfish/v1/ check for api
+github.com/dmtf
+github.com/dell/redfish-ansible-module
+
 - deploy idm to have ldap provider for ocp
 - clean up ovirt-vm-infra-vars.yml
 - have play in 1-ovirt-vm-infra-deploy that copies root ssh key from bastion to all ocp nodes. This way we can just run 0 and 1 playbook from laptop (no need to run 0 from laptop... then switch to bastion to run 1)
