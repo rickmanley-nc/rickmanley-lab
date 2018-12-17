@@ -250,6 +250,10 @@
   tasks:
     - name: Wait 600 seconds for target connection to become reachable/usable
       wait_for_connection:
+        connect_timeout: 20
+        sleep: 5
+        delay: 5
+        timeout: 300
 
 - hosts: ocp
   name: Prepare nodes prior to OCP 3.11 Install
