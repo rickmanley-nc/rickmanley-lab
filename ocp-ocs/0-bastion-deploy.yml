@@ -25,6 +25,7 @@
         nics:
           - name: nic1
             profile_name: ovirtmgmt
+            mac_address: 56:6f:69:b1:ab:cd
         cloud_init:
           host_name: "{{ item }}.rnelson-demo.com"
           user_name: root
