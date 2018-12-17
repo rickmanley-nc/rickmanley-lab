@@ -1,0 +1,122 @@
+[OSEv3:children]
+masters
+nodes
+etcd
+glusterfs
+#scaleup_new_nodes
+#ocsinfra_glusterfs_registry
+
+[OSEv3:vars]
+ansible_become=true
+openshift_deployment_type=openshift-enterprise
+openshift_disable_check=memory_availability,disk_availability,docker_storage,package_version,docker_image_availability,package_availability
+openshift_enable_service_catalog=false
+openshift_master_dynamic_provisioning_enabled=true
+osm_use_cockpit=false
+
+openshift_master_api_port=443
+openshift_master_console_port=443
+openshift_master_identity_providers=[{'name': 'idm', 'challenge': 'true', 'login': 'true', 'kind': 'LDAPPasswordIdentityProvider', 'attributes': {'id': ['dn'], 'email': ['mail'], 'name': ['cn'], 'preferredUsername': ['uid']}, 'bindDN': 'uid=system,cn=sysaccounts,cn=etc,dc=auth,dc=internal,dc=aws,dc=testdrive,dc=openshift,dc=com', 'bindPassword': 'bindingpassword', 'ca': '/etc/origin/master/idm_ldap_ca.crt', 'insecure': 'false', 'url': 'ldap://idm.internal.aws.testdrive.openshift.com/cn=users,cn=accounts,dc=auth,dc=internal,dc=aws,dc=testdrive,dc=openshift,dc=com?uid?sub?(memberOf=cn=ose-user,cn=groups,cn=accounts,dc=auth,dc=internal,dc=aws,dc=testdrive,dc=openshift,dc=com)'}]
+os_sdn_network_plugin_name=redhat/openshift-ovs-multitenant
+openshift_master_default_subdomain=apps.321267227410.aws.testdrive.openshift.com
+openshift_master_cluster_public_hostname=openshift.321267227410.aws.testdrive.openshift.com
+openshift_web_console_prefix='support.internal.aws.testdrive.openshift.com:5000/openshift3/ose-'
+
+openshift_examples_modify_imagestreams=true
+openshift_additional_repos=[{'id': 'openshift_packages', 'name': 'OpenShift_Packages', 'baseurl': 'http://master.internal.aws.testdrive.openshift.com/repo', 'enabled': 1, 'gpgcheck': 0}]
+openshift_docker_insecure_registries=support.internal.aws.testdrive.openshift.com:5000
+openshift_docker_additional_registries=support.internal.aws.testdrive.openshift.com:5000
+oreg_url=support.internal.aws.testdrive.openshift.com:5000/openshift3/ose-${component}:${version}
+osm_etcd_image=support.internal.aws.testdrive.openshift.com:5000/rhel7/etcd
+openshift_release=v3.11.16
+openshift_image_tag=v3.11.16
+
+container_runtime_extra_storage=[{'device': '/dev/xvdc', 'path': '/var/lib/origin/openshift.local.volumes', 'options': 'gquota', 'filesystem': 'xfs', 'format': 'True'}]
+
+# special storage configs
+openshift_storage_glusterfs_version=v3.10
+openshift_storage_glusterfs_heketi_version=v3.10
+openshift_storage_glusterfs_block_version=v3.10
+openshift_storage_glusterfs_s3_version=v3.10
+openshift_storage_glusterfs_namespace=storage
+openshift_storage_glusterfs_heketi_admin_key=myS3cr3tpassw0rd
+openshift_storage_glusterfs_storageclass=true
+openshift_storage_glusterfs_storageclass_default=true
+openshift_storage_glusterfs_block_deploy=false
+#ocsinfra_openshift_storage_glusterfs_registry_version=v3.10
+#ocsinfra_openshift_storage_glusterfs_registry_heketi_version=v3.10
+#ocsinfra_openshift_storage_glusterfs_registry_block_version=v3.10
+#ocsinfra_openshift_storage_glusterfs_registry_s3_version=v3.10
+#ocsinfra_openshift_storage_glusterfs_registry_namespace=infra-storage
+#ocsinfra_openshift_storage_glusterfs_registry_heketi_admin_key=myS3cr3tpassw0rd
+#ocsinfra_openshift_storage_glusterfs_registry_storageclass=true
+#ocsinfra_openshift_storage_glusterfs_registry_block_deploy=true
+#ocsinfra_openshift_storage_glusterfs_registry_block_storageclass=true
+#ocsinfra_openshift_storage_glusterfs_registry_block_host_vol_create=true
+#ocsinfra_openshift_storage_glusterfs_registry_block_host_vol_size=30
+
+# metrics configs
+openshift_metrics_install_metrics=false
+#metrics_openshift_metrics_install_metrics=true
+#metrics_openshift_metrics_cassandra_storage_type=dynamic
+#metrics_openshift_metrics_storage_volume_size=10Gi
+#metrics_openshift_metrics_hawkular_hostname=metrics.apps.321267227410.aws.testdrive.openshift.com
+#metrics_openshift_metrics_cassandra_pvc_storage_class_name='glusterfs-registry-block'
+#metrics_openshift_metrics_hawkular_nodeselector={"node-role.kubernetes.io/infra": "true"}
+#metrics_openshift_metrics_cassandra_nodeselector={"node-role.kubernetes.io/infra": "true"}
+#metrics_openshift_metrics_heapster_nodeselector={"node-role.kubernetes.io/infra": "true"}
+
+# logging configs
+openshift_logging_install_logging=false
+#logging_openshift_logging_install_logging=true
+#logging_openshift_logging_es_pvc_dynamic=true
+#logging_openshift_logging_es_pvc_size=10Gi
+#logging_openshift_logging_es_pvc_storage_class_name='glusterfs-registry-block'
+#logging_openshift_logging_es_memory_limit=1G
+#logging_openshift_logging_kibana_hostname=kibana.apps.321267227410.aws.testdrive.openshift.com
+#logging_openshift_logging_curator_nodeselector={"node-role.kubernetes.io/infra": "true"}
+#logging_openshift_logging_kibana_nodeselector={"node-role.kubernetes.io/infra": "true"}
+#logging_openshift_logging_es_nodeselector={"node-role.kubernetes.io/infra": "true"}
+
+# prometheus configs (future)
+openshift_hosted_prometheus_deploy=true
+
+[etcd]
+master.internal.aws.testdrive.openshift.com
+
+[masters]
+master.internal.aws.testdrive.openshift.com
+
+[nodes]
+master.internal.aws.testdrive.openshift.com openshift_hostname=master.internal.aws.testdrive.openshift.com openshift_public_hostname=master.321267227410.aws.testdrive.openshift.com openshift_node_group_name='node-config-master'
+infra.internal.aws.testdrive.openshift.com openshift_hostname=infra.internal.aws.testdrive.openshift.com openshift_public_hostname=infra.321267227410.aws.testdrive.openshift.com openshift_node_group_name='node-config-infra'
+node01.internal.aws.testdrive.openshift.com openshift_hostname=node01.internal.aws.testdrive.openshift.com openshift_public_hostname=node01.321267227410.aws.testdrive.openshift.com openshift_node_group_name='node-config-compute'
+node02.internal.aws.testdrive.openshift.com openshift_hostname=node02.internal.aws.testdrive.openshift.com openshift_public_hostname=node02.321267227410.aws.testdrive.openshift.com openshift_node_group_name='node-config-compute'
+node03.internal.aws.testdrive.openshift.com openshift_hostname=node03.internal.aws.testdrive.openshift.com openshift_public_hostname=node03.321267227410.aws.testdrive.openshift.com openshift_node_group_name='node-config-compute'
+
+#scaleup_[new_nodes]
+#scaleup_node04.internal.aws.testdrive.openshift.com openshift_node_group_name='node-config-compute' openshift_hostname=node04.internal.aws.testdrive.openshift.com openshift_public_hostname=node04.321267227410.aws.testdrive.openshift.com openshift_node_group_name='node-config-compute'
+#scaleup_node05.internal.aws.testdrive.openshift.com openshift_node_group_name='node-config-compute' openshift_hostname=node05.internal.aws.testdrive.openshift.com openshift_public_hostname=node05.321267227410.aws.testdrive.openshift.com openshift_node_group_name='node-config-compute'
+#scaleup_node06.internal.aws.testdrive.openshift.com openshift_node_group_name='node-config-compute' openshift_hostname=node06.internal.aws.testdrive.openshift.com openshift_public_hostname=node06.321267227410.aws.testdrive.openshift.com openshift_node_group_name='node-config-compute'
+
+[glusterfs]
+node01.internal.aws.testdrive.openshift.com glusterfs_ip=10.0.1.46 glusterfs_zone=1 glusterfs_devices='[ "/dev/xvdd" ]'
+node02.internal.aws.testdrive.openshift.com glusterfs_ip=10.0.3.5 glusterfs_zone=2 glusterfs_devices='[ "/dev/xvdd" ]'
+node03.internal.aws.testdrive.openshift.com glusterfs_ip=10.0.4.51 glusterfs_zone=3 glusterfs_devices='[ "/dev/xvdd" ]'
+
+#ocsinfra_[glusterfs_registry]
+#ocsinfra_node04.internal.aws.testdrive.openshift.com glusterfs_ip=10.0.1.95 glusterfs_zone=1 glusterfs_devices='[ "/dev/xvdd" ]'
+#ocsinfra_node05.internal.aws.testdrive.openshift.com glusterfs_ip=10.0.3.145 glusterfs_zone=2 glusterfs_devices='[ "/dev/xvdd" ]'
+#ocsinfra_node06.internal.aws.testdrive.openshift.com glusterfs_ip=10.0.4.16 glusterfs_zone=3 glusterfs_devices='[ "/dev/xvdd" ]'
+
+[glusterfs:vars]
+ansible_become=true
+
+#ocsinfra_[glusterfs_registry:vars]
+#ocsinfra_ansible_become=true
+
+[idm]
+idm.internal.aws.testdrive.openshift.com
+
+[idm:vars]
+ansible_become=true 

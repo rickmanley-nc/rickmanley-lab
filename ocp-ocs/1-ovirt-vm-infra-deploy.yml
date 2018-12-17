@@ -24,7 +24,7 @@
         auth: "{{ ovirt_auth }}"
         cluster: Default
         template: rhel-7.6-kvm
-        storage_domain: vmstore
+        storage_domain: nfs-synology
         name: "{{ item }}"
         state: running
         instance_type: Medium
@@ -62,19 +62,19 @@
         interface: virtio
         wait: true
       with_items:
-        - { vm_name: 'ocp-master1', name: 'docker_disk', id: '1', size: '15GiB' }
-        - { vm_name: 'ocp-master1', name: 'etcd_disk', id: '2', size: '25GiB' }
-        - { vm_name: 'ocp-master2', name: 'docker_disk', id: '1', size: '15GiB' }
-        - { vm_name: 'ocp-master2', name: 'etcd_disk', id: '2', size: '25GiB' }
-        - { vm_name: 'ocp-master3', name: 'docker_disk', id: '1', size: '15GiB' }
-        - { vm_name: 'ocp-master3', name: 'etcd_disk', id: '2', size: '25GiB' }
+        - { vm_name: 'ocp-master1', name: 'docker_disk', id: '1', size: '20GiB' }
+#        - { vm_name: 'ocp-master1', name: 'etcd_disk', id: '2', size: '25GiB' }
+        - { vm_name: 'ocp-master2', name: 'docker_disk', id: '1', size: '20GiB' }
+#        - { vm_name: 'ocp-master2', name: 'etcd_disk', id: '2', size: '25GiB' }
+        - { vm_name: 'ocp-master3', name: 'docker_disk', id: '1', size: '20GiB' }
+#        - { vm_name: 'ocp-master3', name: 'etcd_disk', id: '2', size: '25GiB' }
 
     - name: Create Infra and App VMs
       ovirt_vms:
         auth: "{{ ovirt_auth }}"
         cluster: Default
         template: rhel-7.6-kvm
-        storage_domain: vmstore
+        storage_domain: nfs-synology
         name: "{{ item }}"
         state: running
         instance_type: Medium
@@ -126,7 +126,7 @@
         auth: "{{ ovirt_auth }}"
         cluster: Default
         template: rhel-7.6-kvm
-        storage_domain: vmstore
+        storage_domain: nfs-synology
         name: "{{ item }}"
         state: running
         instance_type: Tiny

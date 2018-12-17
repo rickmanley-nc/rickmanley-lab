@@ -1,0 +1,114 @@
+[OSEv3:children]
+masters
+nodes
+etcd
+glusterfs
+glusterfs_registry
+
+[etcd]
+ocp-master1.rnelson-demo.com openshift_public_hostname=ocp-master1.rnelson-demo.com
+ocp-master2.rnelson-demo.com openshift_public_hostname=ocp-master2.rnelson-demo.com
+ocp-master3.rnelson-demo.com openshift_public_hostname=ocp-master3.rnelson-demo.com
+
+[masters]
+ocp-master1.rnelson-demo.com openshift_public_hostname=ocp-master1.rnelson-demo.com
+ocp-master2.rnelson-demo.com openshift_public_hostname=ocp-master2.rnelson-demo.com
+ocp-master3.rnelson-demo.com openshift_public_hostname=ocp-master3.rnelson-demo.com
+
+[nodes]
+ocp-master1.rnelson-demo.com openshift_public_hostname=ocp-master1.rnelson-demo.com openshift_node_group_name='node-config-master'
+ocp-master2.rnelson-demo.com openshift_public_hostname=ocp-master2.rnelson-demo.com openshift_node_group_name='node-config-master'
+ocp-master3.rnelson-demo.com openshift_public_hostname=ocp-master3.rnelson-demo.com openshift_node_group_name='node-config-master'
+ocp-infra1.rnelson-demo.com openshift_public_hostname=ocp-infra1.rnelson-demo.com openshift_node_group_name='node-config-infra'
+ocp-infra2.rnelson-demo.com openshift_public_hostname=ocp-infra2.rnelson-demo.com openshift_node_group_name='node-config-infra'
+ocp-infra3.rnelson-demo.com openshift_public_hostname=ocp-infra3.rnelson-demo.com openshift_node_group_name='node-config-infra'
+ocp-app1.rnelson-demo.com openshift_public_hostname=ocp-app1.rnelson-demo.com openshift_node_group_name='node-config-compute'
+ocp-app2.rnelson-demo.com openshift_public_hostname=ocp-app2.rnelson-demo.com openshift_node_group_name='node-config-compute'
+ocp-app3.rnelson-demo.com openshift_public_hostname=ocp-app3.rnelson-demo.com openshift_node_group_name='node-config-compute'
+
+[glusterfs]
+ocp-app1.rnelson-demo.com glusterfs_zone=1 glusterfs_devices='["/dev/vdb"]'
+ocp-app2.rnelson-demo.com glusterfs_zone=2 glusterfs_devices='["/dev/vdb"]'
+ocp-app3.rnelson-demo.com glusterfs_zone=3 glusterfs_devices='["/dev/vdb"]'
+
+[glusterfs_registry]
+ocp-infra1.rnelson-demo.com glusterfs_zone=1 glusterfs_devices='["/dev/vdb"]'
+ocp-infra2.rnelson-demo.com glusterfs_zone=2 glusterfs_devices='["/dev/vdb"]'
+ocp-infra3.rnelson-demo.com glusterfs_zone=3 glusterfs_devices='["/dev/vdb"]'
+
+[OSEv3:vars]
+ansible_ssh_user=root
+ansible_become=false
+debug_level=2
+openshift_release=v3.11
+openshift_deployment_type=openshift-enterprise
+
+oreg_url=registry.redhat.io
+oreg_auth_user=rhn-support-rnelson
+oreg_auth_password=testme
+
+openshift_master_cluster_hostname=ocp-lb.rnelson-demo.com
+openshift_master_cluster_public_hostname=ocp-lb-public.rnelson-demo.com
+
+# registry
+openshift_hosted_registry_storage_kind=glusterfs
+openshift_hosted_registry_storage_volume_size=10Gi
+openshift_hosted_registry_selector="node-role.kubernetes.io/infra=true"
+
+# logging
+openshift_logging_install_logging=true
+openshift_logging_es_pvc_dynamic=true
+openshift_logging_es_pvc_size=10Gi
+openshift_logging_es_cluster_size=3
+openshift_logging_es_pvc_storage_class_name='glusterfs-registry-block'
+openshift_logging_kibana_nodeselector={"node-role.kubernetes.io/infra":"true"}
+openshift_logging_curator_nodeselector={"node-role.kubernetes.io/infra":"true"}
+openshift_logging_es_nodeselector={"node-role.kubernetes.io/infra":"true"}
+
+# metrics
+openshift_metrics_install_metrics=true
+openshift_metrics_storage_kind=dynamic
+openshift_master_dynamic_provisioning_enabled=true
+openshift_metrics_storage_volume_size=10Gi
+openshift_metrics_cassanda_pvc_storage_class_name='glusterfs-registry-block'
+openshift_metrics_hawkular_nodeselector={"node-role.kubernetes.io/infra":"true"}
+openshift_metrics_cassandra_nodeselector={"node-role.kubernetes.io/infra":"true"}
+openshift_metrics_heapster_nodeselector={"node-role.kubernetes.io/infra":"true"}
+
+# prometheous operator
+openshift_cluster_monitoring_operator_install=true
+openshift_cluster_monitoring_operator_node_selector={"node-role.kubernetes.io/infra":"true"}
+openshift_cluster_monitoring_operator_prometheus_storage_enabled=true
+openshift_cluster_monitoring_operator_alertmanager_storage_enabled=true
+openshift_cluster_monitoring_operator_prometheus_storage_capacity=10Gi
+openshift_cluster_monitoring_operator_alertmanager_storage_capacity=2Gi
+openshift_cluster_monitoring_operator_prometheus_storage_class_name='glusterfs-registry-block'
+openshift_cluster_monitoring_operator_alertmanager_storage_class_name='glusterfs-registry-block'
+
+# Container image to use for glusterfs pods
+openshift_storage_glusterfs_image="registry.redhat.io/rhgs3/rhgs-server-rhel7:v3.11"
+
+# Container image to use for glusterblock-provisioner pod
+openshift_storage_glusterfs_block_image="registry.redhat.io/rhgs3/rhgs-gluster-block-prov-rhel7:v3.11"
+
+# Container image to use for heketi pods
+openshift_storage_glusterfs_heketi_image="registry.redhat.io/rhgs3/rhgs-volmanager-rhel7:v3.11"
+
+# OCS storage cluster
+openshift_storage_glusterfs_namespace=app-storage
+openshift_storage_glusterfs_storageclass=true
+openshift_storage_glusterfs_storageclass_default=false
+
+# OCS storage for OpenShift infrastructure
+openshift_storage_glusterfs_registry_namespace=infra-storage
+openshift_storage_glusterfs_registry_storageclass=false
+openshift_storage_glusterfs_registry_block_deploy=true
+openshift_storage_glusterfs_registry_block_host_vol_create=true
+openshift_storage_glusterfs_registry_block_host_vol_size=86
+openshift_storage_glusterfs_registry_block_storageclass=true
+openshift_storage_glusterfs_registry_block_storageclass_default=false
+
+
+openshift_master_identity_providers=[{'name': 'htpasswd_auth', 'login': 'true', 'challenge': 'true', 'kind': 'HTPasswdPasswordIdentityProvider'}]
+openshift_master_htpasswd_users={'rnelson': 'RedHat1!'}
+openshift_master_default_subdomain=apps.rnelson-demo.com
