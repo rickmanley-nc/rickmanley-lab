@@ -24,7 +24,7 @@
         auth: "{{ ovirt_auth }}"
         cluster: Default
         template: rhel-7.6-kvm
-        storage_domain: nfs-synology
+        storage_domain: vmstore
         name: "{{ item }}"
         state: running
         instance_type: Medium
@@ -62,11 +62,11 @@
         interface: virtio
         wait: true
       with_items:
-        - { vm_name: 'ocp-master1', name: 'docker_disk', id: '1', size: '20GiB' }
+        - { vm_name: 'ocp-master1', name: 'docker_disk', id: '1', size: '70GiB' }
 #        - { vm_name: 'ocp-master1', name: 'etcd_disk', id: '2', size: '25GiB' }
-        - { vm_name: 'ocp-master2', name: 'docker_disk', id: '1', size: '20GiB' }
+        - { vm_name: 'ocp-master2', name: 'docker_disk', id: '1', size: '70GiB' }
 #        - { vm_name: 'ocp-master2', name: 'etcd_disk', id: '2', size: '25GiB' }
-        - { vm_name: 'ocp-master3', name: 'docker_disk', id: '1', size: '20GiB' }
+        - { vm_name: 'ocp-master3', name: 'docker_disk', id: '1', size: '70GiB' }
 #        - { vm_name: 'ocp-master3', name: 'etcd_disk', id: '2', size: '25GiB' }
 
     - name: Create Infra and App VMs
@@ -74,7 +74,7 @@
         auth: "{{ ovirt_auth }}"
         cluster: Default
         template: rhel-7.6-kvm
-        storage_domain: nfs-synology
+        storage_domain: vmstore
         name: "{{ item }}"
         state: running
         instance_type: Medium
@@ -114,22 +114,22 @@
         interface: virtio
         wait: true
       with_items:
-        - { vm_name: 'ocp-infra1', name: 'docker_disk', id: '1', size: '15GiB' }
-        - { vm_name: 'ocp-infra2', name: 'docker_disk', id: '1', size: '15GiB' }
-        - { vm_name: 'ocp-infra3', name: 'docker_disk', id: '1', size: '15GiB' }
-        - { vm_name: 'ocp-app1', name: 'docker_disk', id: '1', size: '15GiB' }
-        - { vm_name: 'ocp-app2', name: 'docker_disk', id: '1', size: '15GiB' }
-        - { vm_name: 'ocp-app3', name: 'docker_disk', id: '1', size: '15GiB' }
+        - { vm_name: 'ocp-infra1', name: 'docker_disk', id: '1', size: '70GiB' }
+        - { vm_name: 'ocp-infra2', name: 'docker_disk', id: '1', size: '70GiB' }
+        - { vm_name: 'ocp-infra3', name: 'docker_disk', id: '1', size: '70GiB' }
+        - { vm_name: 'ocp-app1', name: 'docker_disk', id: '1', size: '70GiB' }
+        - { vm_name: 'ocp-app2', name: 'docker_disk', id: '1', size: '70GiB' }
+        - { vm_name: 'ocp-app3', name: 'docker_disk', id: '1', size: '70GiB' }
 
     - name: Create Load Balancer VM
       ovirt_vms:
         auth: "{{ ovirt_auth }}"
         cluster: Default
         template: rhel-7.6-kvm
-        storage_domain: nfs-synology
+        storage_domain: vmstore
         name: "{{ item }}"
         state: running
-        instance_type: Tiny
+        instance_type: Small
         nics:
           - name: nic1
             profile_name: ovirtmgmt
