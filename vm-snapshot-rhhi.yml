@@ -1,0 +1,30 @@
+---
+#yum --enablerepo=rhel-7-server-rhv-4.2-manager-rpms install python-ovirt-engine-sdk4
+- name: snapshot vms
+  hosts: localhost
+  gather_facts: no
+
+  tasks:
+    - name: Login to RHV
+      ovirt_auth:
+        url: https://rhvm.rnelson-demo.com/ovirt-engine/api
+        insecure: yes
+        username: admin@internal
+        password: RedHat1!
+
+    - name: perform snap
+      ovirt_snapshots:
+        auth: "{{ ovirt_auth }}"
+        vm_name: "{{ item }}"
+        description: snap after successful configuration
+        use_memory: true
+      with_items:
+          - gluster-1
+          - gluster-2
+          - gluster-3
+          - gluster-client
+
+    - name: Cleanup RHV auth token
+      ovirt_auth:
+        ovirt_auth: "{{ ovirt_auth }}"
+        state: absent
