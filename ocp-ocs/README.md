@@ -1,6 +1,5 @@
 #To do:
 
-- add mac address for each node, then hard code into /etc/hosts ?
 - deploy idm to have ldap provider for ocp
 - clean up ovirt-vm-infra-vars.yml
 - have play in 1-ovirt-vm-infra-deploy that copies root ssh key from bastion to all ocp nodes. This way we can just run 0 and 1 playbook from laptop (no need to run 0 from laptop... then switch to bastion to run 1)

@@ -2,6 +2,7 @@
 #ansible-playbook -u root 1-gluster-deploy.yml -k
 ---
 - hosts: localhost
+  name: Create Gluster servers and client
   gather_facts: no
 
   tasks:
@@ -39,10 +40,10 @@
               - yum -y remove cloud-init
         wait: true
       with_items:
-         - gluster-1
-         - gluster-2
-         - gluster-3
-         - gluster-client
+         - gluster-1-fips
+         - gluster-2-fips
+         - gluster-3-fips
+         - gluster-client-fips
 
     - name: Create and attach disks for gluster nodes
       ovirt_disk:
@@ -55,9 +56,9 @@
         interface: virtio
         wait: true
       with_items:
-        - { vm_name: 'gluster-1', name: 'data-disk', id: '1', size: '15GiB' }
-        - { vm_name: 'gluster-2', name: 'data-disk', id: '1', size: '15GiB' }
-        - { vm_name: 'gluster-3', name: 'data-disk', id: '1', size: '15GiB' }
+        - { vm_name: 'gluster-1-fips', name: 'data-disk', id: '1', size: '15GiB' }
+        - { vm_name: 'gluster-2-fips', name: 'data-disk', id: '1', size: '15GiB' }
+        - { vm_name: 'gluster-3-fips', name: 'data-disk', id: '1', size: '15GiB' }
 
 
     - name: Cleanup RHV auth token
@@ -65,7 +66,7 @@
         ovirt_auth: "{{ ovirt_auth }}"
         state: absent
 
-- hosts: gluster-[1:2:3].rnelson-demo.com
+- hosts: gluster-server-fips
   name: Initial Setup for Gluster Nodes
   vars:
       activation_key: rnelson-rhhi
@@ -125,7 +126,7 @@
       async: 300
       poll: 0
 
-- hosts: gluster-client.rnelson-demo.com
+- hosts: gluster-client-fips
   name: configure gluster-client
   vars:
       activation_key: rnelson-rhhi
@@ -192,7 +193,7 @@
     - name: Create known_hosts
       shell: "ssh-keyscan -t ecdsa-sha2-nistp256 {{item}} >> /root/.ssh/known_hosts"
       with_items:
-        - gluster-1.rnelson-demo.com
-        - gluster-2.rnelson-demo.com
-        - gluster-3.rnelson-demo.com
-        - gluster-client.rnelson-demo.com
+        - gluster-1-fips.rnelson-demo.com
+        - gluster-2-fips.rnelson-demo.com
+        - gluster-3-fips.rnelson-demo.com
+        - gluster-client-fips.rnelson-demo.com

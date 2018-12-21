@@ -235,6 +235,10 @@
         - ocp-app2
         - ocp-app3
 
+    - name: sleep for 300 seconds and continue with play
+      wait_for: timeout=300
+      delegate_to: localhost
+
   post_tasks:
     - name: Logout from oVirt
       ovirt_auth:
@@ -243,17 +247,28 @@
       tags:
         - always
 
-- hosts: ocp
-  name: wait for all hosts to be reachable
-  gather_facts: no
+- hosts: localhost
+  name: add ocp hosts to known_hosts
 
   tasks:
-    - name: Wait 600 seconds for target connection to become reachable/usable
-      wait_for_connection:
-        connect_timeout: 20
-        sleep: 5
-        delay: 5
-        timeout: 300
+    - name: ensure SSH key is generated
+      command: ssh-keygen -t rsa -f /root/.ssh/id_rsa -N ''
+      args:
+        creates: /root/.ssh/id_rsa
+
+    - name: Create known_hosts
+      shell: "ssh-keyscan -t ecdsa-sha2-nistp256 {{item}} >> /root/.ssh/known_hosts"
+      with_items:
+        - ocp-master1
+        - ocp-master2
+        - ocp-master3
+        - ocp-infra1
+        - ocp-infra2
+        - ocp-infra3
+        - ocp-app1
+        - ocp-app2
+        - ocp-app3
+        - ocp-lb
 
 - hosts: ocp
   name: Prepare nodes prior to OCP 3.11 Install
