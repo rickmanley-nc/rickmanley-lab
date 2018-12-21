@@ -1,4 +1,5 @@
 ---
+#ansible-playbook -u root 1-prep.yml -k
 - hosts: rhhi
   name: Prepare systems before installing RHHI
   gather_facts: yes
@@ -15,53 +16,44 @@
       mode: 0644
     tags: pre
 
-  - name: Copy Ansible hosts file
-    copy:
-      src: ansible-hosts
-      dest: /etc/ansible/hosts
-      mode: 0644
-    tags: pre
+#  - name: Copy Ansible hosts file
+#    copy:
+#      src: ansible-hosts
+#      dest: /etc/ansible/hosts
+#      mode: 0644
+#    tags: pre
 
-# NEED TO TEST
-#  - name: ensure SSH key is generated
-#    command: ssh-keygen -t rsa -f /root/.ssh/id_rsa -N ''
-#    args:
-#      creates: /root/.ssh/id_rsa
-
-  - name: create ssh dir
-    file:
-      path: /root/.ssh
-      state: directory
-      owner: root
-      group: root
-      mode: 0700
+  - name: ensure SSH key is generated
+    command: ssh-keygen -t rsa -f /root/.ssh/id_rsa -N ''
+    args:
+      creates: /root/.ssh/id_rsa
+    when: ansible_nodename == "rhhi1.rnelson-demo.com"
     tags: keys
 
-  - name: add id_rsa
-    copy:
-      src: files/id_rsa
-      dest: /root/.ssh/id_rsa
-      group: root
-      owner: root
-      mode: 0600
-    tags: keys
+  - name: fetch RHHI-1 ssh key
+    shell: cat ~/.ssh/id_rsa.pub
+    register: ssh_keys
+    when: ansible_nodename == "rhhi1.rnelson-demo.com"
+    tags:
+      - keys
 
-  - name: add id_rsa.pub
-    copy:
-      src: files/id_rsa.pub
-      dest: /root/.ssh/id_rsa.pub
-      group: root
-      owner: root
-      mode: 0644
-    tags: keys
+  - name: verify key
+    debug: msg="{{ ssh_keys.stdout }}"
+    when: ansible_nodename == "rhhi1.rnelson-demo.com"
+    tags:
+      - keys
 
-  - name: Set authorized key
-    authorized_key:
-      user: root
-      key: "{{ lookup('file', 'id_rsa.pub') }}"
-    tags: keys
+  - name: deploy keys on all servers
+    authorized_key: user=root key="{{ item[0] }}"
+    delegate_to: "{{ item[1] }}"
+    with_nested:
+      - "{{ ssh_keys.stdout }}"
+      - "{{groups['rhhi']}}"
+    when: ansible_nodename == "rhhi1.rnelson-demo.com"
+    tags:
+      - keys
 
-  - name: Install SSH public key
+  - name: Install personal SSH public key
     authorized_key:
       user: root
       key: "{{ lookup('file', 'rnelson-homelab.pub') }}"
@@ -77,12 +69,15 @@
 #      - rhhi1.rnelson-demo.com
 #      - rhhi2.rnelson-demo.com
 #      - rhhi3.rnelson-demo.com
+#      - 10.0.0.11
+#      - 10.0.0.12
+#      - 10.0.0.13
 #      - rhhi1-gluster.rnelson-demo.com
 #      - rhhi2-gluster.rnelson-demo.com
 #      - rhhi3-gluster.rnelson-demo.com
 #    delegate_to: rhhi1.rnelson-demo.com
 #    run_once: true
-#    tags: hostkeys
+#    tags: keys
 
   - name: Create known_hosts (task above preferred, but route table on VPN not working)
     shell: "ssh-keyscan -t ecdsa-sha2-nistp256 {{item}} >> /root/.ssh/known_hosts"
@@ -90,12 +85,15 @@
       - rhhi1.rnelson-demo.com
       - rhhi2.rnelson-demo.com
       - rhhi3.rnelson-demo.com
+#      - 10.0.0.11
+#      - 10.0.0.12
+#      - 10.0.0.13
       - rhhi1-gluster.rnelson-demo.com
       - rhhi2-gluster.rnelson-demo.com
       - rhhi3-gluster.rnelson-demo.com
     delegate_to: rhhi1.rnelson-demo.com
     run_once: true
-    tags: hostkeys
+    tags: keys
 
   - name: Register
     command: subscription-manager register --activationkey={{activation_key}} --org={{rhn_org_id}}

@@ -1,5 +1,5 @@
 ---
-#/var/lib/ovirt-hosted-engine-setup/answers/answers.conf
+#ansible-playbook -u root 3-hosted-engine.yml
 - hosts: rhhi1.rnelson-demo.com
   name: Deploy RHHI Storage
 
@@ -13,7 +13,7 @@
         mode: 0600
 
     - name: run hosted-engine
-      shell: hosted-engine --deploy --config-append=/root/answer.cfg < /dev/null
+      shell: hosted-engine --deploy --config-append=/tmp/answer.cfg < /dev/null
       register: hostedengine
 
     - name: debug hosted-engine

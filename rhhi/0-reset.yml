@@ -7,12 +7,12 @@
   - name: "Stop the Gluster volume"
     gluster_volume: name={{ item }} state=stopped
     run_once: yes
-    with_items: [ engine, nvme-vmstore ]
+    with_items: [ engine, vmstore ]
 
   - name: "Delete the Gluster volume"
     gluster_volume: name={{ item }} state=absent
     run_once: yes
-    with_items: [ engine, nvme-vmstore ]
+    with_items: [ engine, vmstore ]
 
   - name: "Remove brick_dirs"
     file: path=/gluster_bricks/{{ item }}/{{ item }}/ state=absent
@@ -20,7 +20,7 @@
 
   - name: "Unmount the bricks"
     mount: path=/gluster_bricks/{{ item }} state=absent
-    with_items: [ engine, nvme-vmstore ]
+    with_items: [ engine, vmstore ]
 
   - name: "Dissolve the Trusted Storage Pool"
     command: gluster peer detach {{ item }}
@@ -41,3 +41,6 @@
   - name: "Clean disks the hard way"
     command: dd if=/dev/zero of=/dev/{{ item }} bs=1M count=10
     with_items: [ nvme0n1 ]
+
+#add unregister
+#add delete of /root/.ssh/ directory

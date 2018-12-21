@@ -1,6 +1,7 @@
 ---
-# ansible-galaxy install ovirt.image-template
+# On control node: ansible-galaxy install ovirt.image-template
 # download copy of kvm image and upload to synology
+# ansible-playbook 6-ovirt-image-template.yml
 - name: oVirt image template
   hosts: localhost
   connection: local
