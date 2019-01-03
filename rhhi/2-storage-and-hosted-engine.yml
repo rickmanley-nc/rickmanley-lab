@@ -1,0 +1,35 @@
+---
+#ansible-playbook -u root 2-storage-and-hosted-engine.yml
+- hosts: {{node1-fqdn}}
+  name: Deploy RHHI Storage
+
+  tasks:
+    - name: copy gdeploy.conf
+      template:
+        src: templates/gdeployConfig-working.conf.j2
+        dest: /tmp/gdeploy.conf
+        owner: root
+        group: root
+        mode: 0600
+
+    - name: configure gluster
+      command: gdeploy -c /tmp/gdeploy.conf -vv --trace
+      register: gdeploy_run
+
+    - name: debug gdeploy.conf
+      debug: msg="{{ gdeploy_run }}"
+
+    - name: copy hosted-engine answer file
+      copy:
+        src: templates/he-answers.cfg.j2
+        dest: /tmp/answer.cfg
+        owner: root
+        group: root
+        mode: 0600
+
+    - name: run hosted-engine
+      shell: hosted-engine --deploy --config-append=/tmp/answer.cfg < /dev/null
+      register: hostedengine
+
+    - name: debug hosted-engine
+      debug: msg="{{ hostedengine }}"

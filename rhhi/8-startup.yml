@@ -1,3 +1,4 @@
+#Not Complete, obviously..
 ipmi power on
 systemctl status glusterd
    if not up... systemctl start glusterd

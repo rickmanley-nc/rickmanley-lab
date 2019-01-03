@@ -3,10 +3,6 @@
 - hosts: rhhi
   name: Prepare systems before installing RHHI
   gather_facts: yes
-  vars:
-    activation_key: rnelson-rhhi
-    rhn_org_id: 1979710
-    pool: 8a85f9833e1404a9013e3cddf95a0599
 
   tasks:
   - name: Copy /etc/hosts file
@@ -23,35 +19,30 @@
 #      mode: 0644
 #    tags: pre
 
-  - name: ensure SSH key is generated
-    command: ssh-keygen -t rsa -f /root/.ssh/id_rsa -N ''
-    args:
-      creates: /root/.ssh/id_rsa
-    when: ansible_nodename == "rhhi1.rnelson-demo.com"
-    tags: keys
+  - block:
+    - name: ensure SSH key is generated
+      command: ssh-keygen -t rsa -f /root/.ssh/id_rsa -N ''
+      args:
+        creates: /root/.ssh/id_rsa
+      tags: keys
+    - name: fetch RHHI-1 ssh key
+      shell: cat ~/.ssh/id_rsa.pub
+      register: ssh_keys
+      tags: keys
 
-  - name: fetch RHHI-1 ssh key
-    shell: cat ~/.ssh/id_rsa.pub
-    register: ssh_keys
-    when: ansible_nodename == "rhhi1.rnelson-demo.com"
-    tags:
-      - keys
+    - name: verify key
+      debug: msg="{{ ssh_keys.stdout }}"
+      tags: keys
 
-  - name: verify key
-    debug: msg="{{ ssh_keys.stdout }}"
-    when: ansible_nodename == "rhhi1.rnelson-demo.com"
-    tags:
-      - keys
-
-  - name: deploy keys on all servers
-    authorized_key: user=root key="{{ item[0] }}"
-    delegate_to: "{{ item[1] }}"
-    with_nested:
-      - "{{ ssh_keys.stdout }}"
-      - "{{groups['rhhi']}}"
-    when: ansible_nodename == "rhhi1.rnelson-demo.com"
-    tags:
-      - keys
+    - name: deploy keys on all servers
+      authorized_key: user=root key="{{ item[0] }}"
+      delegate_to: "{{ item[1] }}"
+      with_nested:
+        - "{{ ssh_keys.stdout }}"
+        - "{{groups['rhhi']}}"
+      tags: keys
+    #end block
+    when: ansible_nodename == "{{node1-fqdn}}"
 
   - name: Install personal SSH public key
     authorized_key:
@@ -69,9 +60,6 @@
 #      - rhhi1.rnelson-demo.com
 #      - rhhi2.rnelson-demo.com
 #      - rhhi3.rnelson-demo.com
-#      - 10.0.0.11
-#      - 10.0.0.12
-#      - 10.0.0.13
 #      - rhhi1-gluster.rnelson-demo.com
 #      - rhhi2-gluster.rnelson-demo.com
 #      - rhhi3-gluster.rnelson-demo.com
@@ -79,19 +67,16 @@
 #    run_once: true
 #    tags: keys
 
-  - name: Create known_hosts (task above preferred, but route table on VPN not working)
+  - name: Create known_hosts
     shell: "ssh-keyscan -t ecdsa-sha2-nistp256 {{item}} >> /root/.ssh/known_hosts"
     with_items:
-      - rhhi1.rnelson-demo.com
-      - rhhi2.rnelson-demo.com
-      - rhhi3.rnelson-demo.com
-#      - 10.0.0.11
-#      - 10.0.0.12
-#      - 10.0.0.13
-      - rhhi1-gluster.rnelson-demo.com
-      - rhhi2-gluster.rnelson-demo.com
-      - rhhi3-gluster.rnelson-demo.com
-    delegate_to: rhhi1.rnelson-demo.com
+      - {{node1-fqdn}}
+      - {{node2-fqdn}}
+      - {{node3-fqdn}}
+      - {{node1-gluster-fqdn}}
+      - {{node2-gluster-fqdn}}
+      - {{node3-gluster-fqdn}}
+    delegate_to: {{node1-fqdn}}
     run_once: true
     tags: keys
 

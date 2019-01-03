@@ -1,0 +1,37 @@
+---
+
+#used by 1-prep.yml
+activation_key: rnelson-rhhi
+rhn_org_id: 1979710
+pool: 8a85f9833e1404a9013e3cddf95a0599
+node1-fqdn: rhhi1.rnelson-demo.com
+node2-fqdn: rhhi2.rnelson-demo.com
+node3-fqdn: rhhi3.rnelson-demo.com
+
+#used by gdeployConfig-working.conf and 1-prep.yml
+node1-gluster-fqdn: rhhi1-gluster.rnelson-demo.com
+node2-gluster-fqdn: rhhi2-gluster.rnelson-demo.com
+node3-gluster-fqdn: rhhi3-gluster.rnelson-demo.com
+
+#used by 4-hosts-and-network.yml
+node1-gluster-ip: 10.0.0.11
+node2-gluster-ip: 10.0.0.12
+node3-gluster-ip: 10.0.0.13
+node-If2: eno2
+
+#used by he-answers.cfg and 4-hosts-and-network.yml
+rhvm_fqdn: rhvm.rnelson-demo.com
+rhvm_bridgeName: ovirtmgmt
+rhvm_bridgeIf: eno1
+rhvm_gateway: 192.168.1.1
+rhvm_cloudinitVMStaticCIDR: 192.168.1.15/24
+rhvm_DNS: 192.168.1.1
+rhvm_cloudinitVMTZ: America/New_York
+rhvm_MACAddr: 00:16:3e:74:bb:ac
+rhvm_vmMemSizeMB: 8192
+rhvm_vmVCpus: 2
+rhvm_DomainName: rnelson-demo.com
+rhvm_cloudinitRootPwd: RedHat1!
+clusterName: Default
+adminPassword: RedHat1!
+storageDatacenterName: hosted_datacenter

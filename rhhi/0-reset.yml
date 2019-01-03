@@ -1,4 +1,5 @@
 ---
+# ansible-playbook -u root 0-reset.yml -k
 - hosts: rhhi
   gather_facts: no
   ignore_errors: yes
@@ -16,7 +17,7 @@
 
   - name: "Remove brick_dirs"
     file: path=/gluster_bricks/{{ item }}/{{ item }}/ state=absent
-    with_items: [ engine, nvme-vmstore ]
+    with_items: [ engine, vmstore ]
 
   - name: "Unmount the bricks"
     mount: path=/gluster_bricks/{{ item }} state=absent
@@ -42,5 +43,5 @@
     command: dd if=/dev/zero of=/dev/{{ item }} bs=1M count=10
     with_items: [ nvme0n1 ]
 
-#add unregister
-#add delete of /root/.ssh/ directory
+  - name: Unregister
+    command: subscription-manager unregister

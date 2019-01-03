@@ -1,7 +1,7 @@
 ---
 #ansible-playbook -u root 3-hosted-engine.yml
 - hosts: rhhi1.rnelson-demo.com
-  name: Deploy RHHI Storage
+  name: Deploy RHHI Hosted Engine
 
   tasks:
     - name: copy hosted-engine answer file
