@@ -1,4 +1,4 @@
-#RHHI HomeLab
+##RHHI HomeLab
 
 This guide focuses on deploying a 3-node Red Hat Hyperconverged Infrastructure (RHHI), fully functioning with little to no additional configuration needed through Ansible Playbooks, all under 1 hour.
 
