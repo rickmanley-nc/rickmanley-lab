@@ -12,19 +12,13 @@
       mode: 0644
     tags: pre
 
-#  - name: Copy Ansible hosts file
-#    copy:
-#      src: ansible-hosts
-#      dest: /etc/ansible/hosts
-#      mode: 0644
-#    tags: pre
-
   - block:
     - name: ensure SSH key is generated
       command: ssh-keygen -t rsa -f /root/.ssh/id_rsa -N ''
       args:
         creates: /root/.ssh/id_rsa
       tags: keys
+
     - name: fetch RHHI-1 ssh key
       shell: cat ~/.ssh/id_rsa.pub
       register: ssh_keys
@@ -42,7 +36,8 @@
         - "{{groups['rhhi']}}"
       tags: keys
     #end block
-    when: ansible_nodename == "{{node1-fqdn}}"
+    delegate_to: "{{node1_fqdn}}"
+    run_once: true
 
   - name: Install personal SSH public key
     authorized_key:
@@ -70,13 +65,13 @@
   - name: Create known_hosts
     shell: "ssh-keyscan -t ecdsa-sha2-nistp256 {{item}} >> /root/.ssh/known_hosts"
     with_items:
-      - {{node1-fqdn}}
-      - {{node2-fqdn}}
-      - {{node3-fqdn}}
-      - {{node1-gluster-fqdn}}
-      - {{node2-gluster-fqdn}}
-      - {{node3-gluster-fqdn}}
-    delegate_to: {{node1-fqdn}}
+      - "{{node1_fqdn}}"
+      - "{{node2_fqdn}}"
+      - "{{node3_fqdn}}"
+      - "{{node1_gluster_fqdn}}"
+      - "{{node2_gluster_fqdn}}"
+      - "{{node3_gluster_fqdn}}"
+    delegate_to: "{{node1_fqdn}}"
     run_once: true
     tags: keys
 

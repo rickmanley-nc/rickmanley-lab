@@ -15,8 +15,8 @@ OVEHOSTED_ENGINE/enableHcGlusterService=bool:True
 OVEHOSTED_STORAGE/storageDatacenterName=str:{{storageDatacenterName}}
 OVEHOSTED_STORAGE/domainType=str:glusterfs
 OVEHOSTED_STORAGE/storageDomainName=str:hosted_storage
-OVEHOSTED_STORAGE/storageDomainConnection=str:{{node1-gluster-fqdn}}:/engine
-OVEHOSTED_STORAGE/mntOptions=str:backup-volfile-servers={{node2-gluster-fqdn}}:{{node3-gluster-fqdn}}
+OVEHOSTED_STORAGE/storageDomainConnection=str:{{node1_gluster_fqdn}}:/engine
+OVEHOSTED_STORAGE/mntOptions=str:backup-volfile-servers={{node2_gluster_fqdn}}:{{node3_gluster_fqdn}}
 OVEHOSTED_VDSM/consoleType=str:vnc
 OVEHOSTED_VM/vmMemSizeMB=int:{{rhvm_vmMemSizeMB}}
 OVEHOSTED_VM/vmMACAddr=str:{{rhvm_MACAddr}}

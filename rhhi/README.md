@@ -1,10 +1,9 @@
 # RHHI HomeLab
 
-This guide focuses on deploying a 3-node Red Hat Hyperconverged Infrastructure (RHHI), fully functioning with little to no additional configuration needed through Ansible Playbooks, all under 1 hour.
+This guide focuses on deploying a 3-node Red Hat Hyperconverged Infrastructure (RHHI), fully functioning with little to no additional configuration needed through Ansible Playbooks, all within 1.5 hour.
 
-From pressing power button on all 3 systems, the OS install + Ansible Playbooks takes `0hr58m30s`
 
-## Requirements for "Control Node"
+## Requirements
 
 I'm using my laptop (Fedora) as the control node. The following /etc/ansible/hosts file is used:
 
