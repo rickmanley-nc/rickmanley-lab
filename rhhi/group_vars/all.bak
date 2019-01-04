@@ -31,9 +31,9 @@ rhvm_MACAddr: 00:16:3e:74:bb:ac
 rhvm_vmMemSizeMB: 8192
 rhvm_vmVCpus: 2
 rhvm_DomainName: rnelson-demo.com
-rhvm_cloudinitRootPwd: RedHat1!
+rhvm_cloudinitRootPwd: <>
 clusterName: Default
-adminPassword: RedHat1!
+adminPassword: <>
 storageDatacenterName: hosted_datacenter
 
 #used by 4-ovirt-image-template.yml
