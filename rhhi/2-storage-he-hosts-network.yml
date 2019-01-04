@@ -1,0 +1,114 @@
+---
+#ansible-playbook -u root 2-storage-he-hosts-network.yml -e @group_vars/all
+- hosts: "{{ node1_fqdn }}"
+  name: Deploy RHHI Storage and HE
+
+  tasks:
+    - name: copy gdeploy.conf
+      template:
+        src: templates/gdeployConfig-working.conf.j2
+        dest: /tmp/gdeploy.conf
+        owner: root
+        group: root
+        mode: 0600
+
+    - name: configure gluster
+      command: gdeploy -c /tmp/gdeploy.conf -vv --trace
+      register: gdeploy_run
+
+#    - name: debug gdeploy.conf
+#      debug: msg="{{ gdeploy_run }}"
+
+    - name: copy hosted-engine answer file
+      template:
+        src: templates/he-answers.cfg.j2
+        dest: /tmp/answer.cfg
+        owner: root
+        group: root
+        mode: 0600
+
+    - name: run hosted-engine
+      shell: hosted-engine --deploy --config-append=/tmp/answer.cfg < /dev/null
+      register: hostedengine
+
+#    - name: debug hosted-engine
+#      debug: msg="{{ hostedengine }}"
+
+- hosts: localhost
+  gather_facts: no
+
+  tasks:
+    - name: Login to RHV
+      ovirt_auth:
+        url: https://{{rhvm_fqdn}}/ovirt-engine/api
+        insecure: yes
+        username: admin@internal
+        password: RedHat1!
+
+    - name: add hosts to cluster
+      ovirt_hosts:
+        auth: "{{ ovirt_auth }}"
+        cluster: Default
+        name: "{{item}}"
+        address: "{{item}}"
+        password: "{{adminPassword}}"
+        hosted_engine: deploy
+      with_items:
+        - "{{node2_fqdn}}"
+        - "{{node3_fqdn}}"
+
+    - name: sleep for 120 seconds and continue with play
+      wait_for: timeout=120
+      delegate_to: localhost
+
+    - name: add gluster network
+      ovirt_networks:
+        auth: "{{ ovirt_auth }}"
+        data_center: Default
+        name: gluster
+        vm_network: false
+        clusters:
+        - name: Default
+          gluster: true
+          migration: true
+          required: false
+        state: present
+
+    - name: Add gluster network to eno2
+      ovirt_host_networks:
+        auth: "{{ ovirt_auth }}"
+        name: "{{node1_fqdn}}"
+        interface: "{{node_If2}}"
+        networks:
+          - name: gluster
+            boot_protocol: static
+            address: "{{node1_gluster_ip}}"
+            netmask: 255.255.255.0
+
+    - name: Add gluster network to eno2
+      ovirt_host_networks:
+        auth: "{{ ovirt_auth }}"
+        name: "{{node2_fqdn}}"
+        interface: "{{node_If2}}"
+        networks:
+          - name: gluster
+            boot_protocol: static
+            address: "{{node2_gluster_ip}}"
+            netmask: 255.255.255.0
+
+    - name: Add gluster network to eno2
+      ovirt_host_networks:
+        auth: "{{ ovirt_auth }}"
+        name: "{{node3_fqdn}}"
+        interface: "{{node_If2}}"
+        networks:
+          - name: gluster
+            boot_protocol: static
+            address: "{{node3_gluster_ip}}"
+            netmask: 255.255.255.0
+        save: true
+
+    - name: Cleanup RHV auth token
+      ovirt_auth:
+        ovirt_auth: "{{ ovirt_auth }}"
+        state: absent
