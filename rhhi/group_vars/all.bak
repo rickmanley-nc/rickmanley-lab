@@ -1,25 +1,22 @@
 ---
 
-#used by 1-prep.yml
 activation_key: <>
 rhn_org_id: <>
 pool: <>
+
+#used by gdeployConfig-working.conf, he-answers.cfg, and 1-prep.yml
 node1_fqdn: rhhi1.rnelson-demo.com
 node2_fqdn: rhhi2.rnelson-demo.com
 node3_fqdn: rhhi3.rnelson-demo.com
-
-#used by gdeployConfig-working.conf, he-answers.cfg, and 1-prep.yml
 node1_gluster_fqdn: rhhi1-gluster.rnelson-demo.com
 node2_gluster_fqdn: rhhi2-gluster.rnelson-demo.com
 node3_gluster_fqdn: rhhi3-gluster.rnelson-demo.com
-
-#used by 3-hosts-and-network.yml
 node1_gluster_ip: 10.0.0.11
 node2_gluster_ip: 10.0.0.12
 node3_gluster_ip: 10.0.0.13
 node_If2: eno2
 
-#used by he-answers.cfg and 3-hosts-and-network.yml
+#used by he-answers.cfg and 2-storage-he-hosts-network.yml
 rhvm_fqdn: rhvm.rnelson-demo.com
 rhvm_bridgeName: ovirtmgmt
 rhvm_bridgeIf: eno1
@@ -36,5 +33,5 @@ clusterName: Default
 adminPassword: <>
 storageDatacenterName: hosted_datacenter
 
-#used by 4-ovirt-image-template.yml
+#used by 3-ovirt-image-template.yml
 qcow_url_ip: 192.168.5.6
