@@ -14,7 +14,7 @@
     engine_password: RedHat1!
     engine_insecure: true
 #    engine_cafile: /etc/pki/ovirt-engine/ca.pem
-    qcow_url: ftp://PXE/isos/rhel-7-kvm-image.qcow2
+    qcow_url: ftp://{{qcow_url_ip}}/PXE/isos/rhel-7-kvm-image.qcow2
     template_cluster: Default
     template_name: rhel-7.6-kvm
     template_memory: 2GiB
@@ -25,4 +25,4 @@
 
 
   roles:
-    - oVirt.image-template
+    - ovirt.image-template

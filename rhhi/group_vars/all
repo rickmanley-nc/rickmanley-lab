@@ -1,9 +1,9 @@
 ---
 
 #used by 1-prep.yml
-activation_key: rnelson-rhhi
-rhn_org_id: 1979710
-pool: 8a85f9833e1404a9013e3cddf95a0599
+activation_key: <>
+rhn_org_id: <>
+pool: <>
 node1_fqdn: rhhi1.rnelson-demo.com
 node2_fqdn: rhhi2.rnelson-demo.com
 node3_fqdn: rhhi3.rnelson-demo.com
@@ -35,3 +35,6 @@ rhvm_cloudinitRootPwd: RedHat1!
 clusterName: Default
 adminPassword: RedHat1!
 storageDatacenterName: hosted_datacenter
+
+#used by 4-ovirt-image-template.yml
+qcow_url_ip: 192.168.5.6
