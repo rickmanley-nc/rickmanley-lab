@@ -39,12 +39,6 @@
     delegate_to: "{{node1_fqdn}}"
     run_once: true
 
-  - name: Install personal SSH public key
-    authorized_key:
-      user: root
-      key: "{{ lookup('file', 'rnelson-homelab.pub') }}"
-    tags: keys
-
 #  - name: Create known_hosts
 #    lineinfile:
 #      path: /root/.ssh/known_hosts
@@ -87,3 +81,27 @@
   - name: Disable All and Enable Specific Repositories
     command: subscription-manager repos --disable="*" --enable=rhel-7-server-rhvh-4-rpms
     tags: register
+
+  - name: Install personal SSH public key
+    authorized_key:
+      user: root
+      key: "{{ lookup('file', 'rnelson-homelab.pub') }}"
+    tags: personal
+
+  - name: Create engine partition (this is a workaround. better in post of kickstart?)
+    shell: echo -e "n\n\n\n+80G\nw\n" | fdisk /dev/sda
+    args:
+      executable: /bin/bash
+    ignore_errors: yes
+    tags: personal
+
+  - name: Create ssdvmstore partition (this is a workaround. better in post of kickstart?)
+    shell: echo -e "n\n\n\n\nw\n" | fdisk /dev/sda
+    args:
+      executable: /bin/bash
+    ignore_errors: yes
+    tags: personal
+
+  - name: partprobe
+    command: partprobe
+    tags: personal

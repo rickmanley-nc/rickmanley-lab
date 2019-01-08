@@ -6,7 +6,7 @@
   tasks:
     - name: copy gdeploy.conf
       template:
-        src: templates/gdeployConfig-working.conf.j2
+        src: templates/gdeploy.conf.j2
         dest: /tmp/gdeploy.conf
         owner: root
         group: root
@@ -84,6 +84,7 @@
             boot_protocol: static
             address: "{{node1_gluster_ip}}"
             netmask: 255.255.255.0
+        save: true
 
     - name: Add gluster network to eno2
       ovirt_host_networks:
@@ -95,6 +96,7 @@
             boot_protocol: static
             address: "{{node2_gluster_ip}}"
             netmask: 255.255.255.0
+        save: true
 
     - name: Add gluster network to eno2
       ovirt_host_networks:
@@ -107,6 +109,46 @@
             address: "{{node3_gluster_ip}}"
             netmask: 255.255.255.0
         save: true
+
+    - name: Cleanup RHV auth token
+      ovirt_auth:
+        ovirt_auth: "{{ ovirt_auth }}"
+        state: absent
+
+- hosts: localhost
+  gather_facts: no
+
+  tasks:
+    - name: Login to RHV
+      ovirt_auth:
+        url: https://{{rhvm_fqdn}}/ovirt-engine/api
+        insecure: yes
+        username: admin@internal
+        password: RedHat1!
+
+    - name: add ssdvmstore storage domain
+      ovirt_storage_domains:
+        auth: "{{ ovirt_auth }}"
+        name: ssdvmstore
+        host: rhhi1.rnelson-demo.com
+        data_center: Default
+        glusterfs:
+          address: rhhi1-gluster.rnelson-demo.com
+          path: /ssdvmstore
+          mount_options: backup-volfile-servers=rhhi2-gluster.rnelson-demo.com:rhhi3-gluster.rnelson-demo.com
+        state: present
+
+    - name: add nvmevmstore storage domain
+      ovirt_storage_domains:
+        auth: "{{ ovirt_auth }}"
+        name: nvmevmstore
+        host: rhhi1.rnelson-demo.com
+        data_center: Default
+        glusterfs:
+          address: rhhi1-gluster.rnelson-demo.com
+          path: /nvmevmstore
+          mount_options: backup-volfile-servers=rhhi2-gluster.rnelson-demo.com:rhhi3-gluster.rnelson-demo.com
+        state: present
 
     - name: Cleanup RHV auth token
       ovirt_auth:

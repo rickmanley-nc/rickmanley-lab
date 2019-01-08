@@ -1,8 +1,17 @@
 ---
-
 activation_key: <>
 rhn_org_id: <>
 pool: <>
+
+device_list:
+  - sda4
+  - sda5
+  - nvme0n1
+
+storage_domain_list:
+  - engine
+  - ssdvmstore
+  - nvmevmstore
 
 #used by gdeployConfig-working.conf, he-answers.cfg, and 1-prep.yml
 node1_fqdn: rhhi1.rnelson-demo.com

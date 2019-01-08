@@ -20,7 +20,7 @@
     template_memory: 2GiB
     template_cpu: 2
     template_disk_size: 10GiB
-    template_disk_storage: vmstore
+    template_disk_storage: hosted_storage
     template_type: server
 
 
