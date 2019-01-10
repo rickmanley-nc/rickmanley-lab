@@ -1,6 +1,4 @@
-#6 node gluster deployment with nfs-ganesha + cache drive
-
-
+#gluster deployment with nfs-ganesha + cache drive
 ##Assumptions
 This deployment assumes the following:
 - The `1-gluster-deploy.yml` playbook is run from a control node, and accomplishes the following:
