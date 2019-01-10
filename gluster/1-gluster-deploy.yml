@@ -80,9 +80,9 @@
 - hosts: gluster
   name: Initial Setup for Gluster Nodes
   vars:
-      activation_key: rnelson-employee
-      rhn_org_id: 1979710
-      pool: 8a85f9833e1404a9013e3cddf95a0599
+      activation_key: <>
+      rhn_org_id: <>
+      pool: <>
       repos:
       repo_list:
         - rhel-7-server-rpms
@@ -139,9 +139,9 @@
 - hosts: gluster-client
   name: configure gluster-client
   vars:
-      activation_key: rnelson-employee
-      rhn_org_id: 1979710
-      pool: 8a85f9833e1404a9013e3cddf95a0599
+      activation_key: <>
+      rhn_org_id: <>
+      pool: <>
       repos:
       repo_list:
         - rhel-7-server-rpms
