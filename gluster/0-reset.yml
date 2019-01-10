@@ -41,3 +41,9 @@
   - name: "Clean disks the hard way"
     command: dd if=/dev/zero of=/dev/{{ item }} bs=1M count=10
     with_items: [ vdb, vdc ]
+
+#  - name: "remove shared storage line in /etc/fstab"
+#    lineinfile:
+#      path: /etc/fstab
+#      state: absent
+#      regexp: ''
