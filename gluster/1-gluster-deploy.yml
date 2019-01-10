@@ -18,7 +18,7 @@
         auth: "{{ ovirt_auth }}"
         cluster: Default
         template: rhel-7.6-kvm
-        storage_domain: vmstore
+        storage_domain: ssdvmstore
         name: "{{ item }}"
         state: running
         instance_type: Medium
@@ -40,36 +40,47 @@
               - yum -y remove cloud-init
         wait: true
       with_items:
-         - gluster-1-fips
-         - gluster-2-fips
-         - gluster-3-fips
-         - gluster-client-fips
+         - gluster-1
+         - gluster-2
+         - gluster-3
+         - gluster-4
+         - gluster-5
+         - gluster-6
+         - gluster-client
 
     - name: Create and attach disks for gluster nodes
       ovirt_disk:
         auth: "{{ ovirt_auth }}"
         vm_name: "{{ item.vm_name }}"
-        storage_domain: "nfs-synology"
+        storage_domain: "ssdvmstore"
         name: "{{ item.name }}-{{ item.id }}"
         size: "{{ item.size }}"
         format: cow
         interface: virtio
         wait: true
       with_items:
-        - { vm_name: 'gluster-1-fips', name: 'data-disk', id: '1', size: '15GiB' }
-        - { vm_name: 'gluster-2-fips', name: 'data-disk', id: '1', size: '15GiB' }
-        - { vm_name: 'gluster-3-fips', name: 'data-disk', id: '1', size: '15GiB' }
-
+        - { vm_name: 'gluster-1', name: 'data-disk', id: '1', size: '15GiB' }
+        - { vm_name: 'gluster-1', name: 'cache-disk', id: '2', size: '20GiB' }
+        - { vm_name: 'gluster-2', name: 'data-disk', id: '1', size: '15GiB' }
+        - { vm_name: 'gluster-2', name: 'cache-disk', id: '2', size: '20GiB' }
+        - { vm_name: 'gluster-3', name: 'data-disk', id: '1', size: '15GiB' }
+        - { vm_name: 'gluster-3', name: 'cache-disk', id: '2', size: '20GiB' }
+        - { vm_name: 'gluster-4', name: 'data-disk', id: '1', size: '15GiB' }
+        - { vm_name: 'gluster-4', name: 'cache-disk', id: '2', size: '20GiB' }
+        - { vm_name: 'gluster-5', name: 'data-disk', id: '1', size: '15GiB' }
+        - { vm_name: 'gluster-5', name: 'cache-disk', id: '2', size: '20GiB' }
+        - { vm_name: 'gluster-6', name: 'data-disk', id: '1', size: '15GiB' }
+        - { vm_name: 'gluster-6', name: 'cache-disk', id: '2', size: '20GiB' }
 
     - name: Cleanup RHV auth token
       ovirt_auth:
         ovirt_auth: "{{ ovirt_auth }}"
         state: absent
 
-- hosts: gluster-server-fips
+- hosts: gluster
   name: Initial Setup for Gluster Nodes
   vars:
-      activation_key: rnelson-rhhi
+      activation_key: rnelson-employee
       rhn_org_id: 1979710
       pool: 8a85f9833e1404a9013e3cddf95a0599
       repos:
@@ -77,7 +88,6 @@
         - rhel-7-server-rpms
         - rhel-7-server-ansible-2-rpms
         - rh-gluster-3-for-rhel-7-server-rpms
-
 
   tasks:
     - name: Register to RHN and attach SKU through Activation Key
@@ -126,10 +136,10 @@
       async: 300
       poll: 0
 
-- hosts: gluster-client-fips
+- hosts: gluster-client
   name: configure gluster-client
   vars:
-      activation_key: rnelson-rhhi
+      activation_key: rnelson-employee
       rhn_org_id: 1979710
       pool: 8a85f9833e1404a9013e3cddf95a0599
       repos:
@@ -160,6 +170,7 @@
         state: latest
       with_items:
         - glusterfs-fuse
+        - firewalld
 
     - name: Update
       yum:
@@ -168,13 +179,6 @@
 
     - name: Start and Enable firewalld
       systemd: name=firewalld state=started enabled=yes
-
-    - name: Configure firewalld
-      firewalld:
-        service: glusterfs
-        permanent: true
-        immediate: yes
-        state: enabled
 
     - name: Reboot
       shell: sleep 10 && /sbin/shutdown -r now
@@ -185,15 +189,40 @@
   name: configure ssh keys on gluster-1
 
   tasks:
-    - name: ensure SSH key is generated
-      command: ssh-keygen -t rsa -f /root/.ssh/id_rsa -N ''
-      args:
-        creates: /root/.ssh/id_rsa
+    - block:
+      - name: ensure SSH key is generated
+        command: ssh-keygen -t rsa -f /root/.ssh/id_rsa -N ''
+        args:
+          creates: /root/.ssh/id_rsa
+        tags: keys
+
+      - name: fetch ssh key
+        shell: cat ~/.ssh/id_rsa.pub
+        register: ssh_keys
+        tags: keys
+
+      - name: verify key
+        debug: msg="{{ ssh_keys.stdout }}"
+        tags: keys
+
+      - name: deploy keys on all servers
+        authorized_key: user=root key="{{ item[0] }}"
+        delegate_to: "{{ item[1] }}"
+        with_nested:
+          - "{{ ssh_keys.stdout }}"
+          - "{{groups['gluster']}}"
+        tags: keys
+      #end block
+      delegate_to: "gluster-1.rnelson-demo.com"
+      run_once: true
 
     - name: Create known_hosts
       shell: "ssh-keyscan -t ecdsa-sha2-nistp256 {{item}} >> /root/.ssh/known_hosts"
       with_items:
-        - gluster-1-fips.rnelson-demo.com
-        - gluster-2-fips.rnelson-demo.com
-        - gluster-3-fips.rnelson-demo.com
-        - gluster-client-fips.rnelson-demo.com
+        - gluster-1.rnelson-demo.com
+        - gluster-2.rnelson-demo.com
+        - gluster-3.rnelson-demo.com
+        - gluster-4.rnelson-demo.com
+        - gluster-5.rnelson-demo.com
+        - gluster-6.rnelson-demo.com
+        - gluster-client.rnelson-demo.com
