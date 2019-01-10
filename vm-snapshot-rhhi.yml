@@ -1,8 +1,19 @@
 ---
 #yum --enablerepo=rhel-7-server-rhv-4.2-manager-rpms install python-ovirt-engine-sdk4
+#ansible-playbook vm-snapshot-rhhi.yml
 - name: snapshot vms
   hosts: localhost
   gather_facts: no
+  vars:
+    description_comment: "snap after gdeploy"
+    server_list:
+      - gluster-1
+      - gluster-2
+      - gluster-3
+      - gluster-4
+      - gluster-5
+      - gluster-6
+#      - gluster-client
 
   tasks:
     - name: Login to RHV
@@ -16,13 +27,17 @@
       ovirt_snapshots:
         auth: "{{ ovirt_auth }}"
         vm_name: "{{ item }}"
-        description: snap after successful configuration
+        description: "{{ description_comment }}"
         use_memory: true
       with_items:
-          - gluster-1
-          - gluster-2
-          - gluster-3
-          - gluster-client
+       - "{{ server_list }}"
+#       - gluster-1
+#       - gluster-2
+#       - gluster-3
+#       - gluster-4
+#       - gluster-5
+#       - gluster-6
+#       - gluster-client
 
     - name: Cleanup RHV auth token
       ovirt_auth:
