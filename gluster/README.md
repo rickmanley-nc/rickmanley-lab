@@ -16,9 +16,7 @@ On gluster-1:
 /var/run/gluster/shared_storage/nfs-ganesha/exports/export.ganesha.conf
 
 [root@gluster-1 exports]# cat export.ganesha.conf
-# WARNING : Using Gluster CLI will overwrite manual
-# changes made to this file. To avoid it, edit the
-# file and run ganesha-ha.sh --refresh-config.
+
 EXPORT{
       Export_Id = 2;
       Path = "/ganesha";
