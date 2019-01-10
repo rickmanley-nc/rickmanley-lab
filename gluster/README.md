@@ -1,4 +1,5 @@
-##Assumptions
+# 6 node gluster deployment with nfs-ganesha + cache drive
+## Assumptions
 This deployment assumes the following:
 - The `1-gluster-deploy.yml` playbook is run from a control node, and accomplishes the following:
   - deploys 7 VMs (6 Gluster servers and 1 Gluster client)
@@ -11,7 +12,7 @@ This deployment assumes the following:
 
 
 
-##General Steps:
+## General Steps:
 1. Ensure that the Control Node's `/etc/ansible/hosts` file includes the following:
 ```
 [gluster]
@@ -28,8 +29,8 @@ gluster-[1:6].rnelson-demo.com
 
 
 
-##Exporting a subdirectory
-###Prepare the filesystem from the client:
+## Exporting a subdirectory
+### Prepare the filesystem from the client:
 - mkdir /mnt/client
 - mount -t glusterfs gluster-1.rnelson-demo.com:/ganesha /mnt/client/
 - cd /mnt/client/
@@ -41,7 +42,7 @@ gluster-[1:6].rnelson-demo.com
 - touch directory2/file-{16..20}
 
 
-###Create a subdirectory export on gluster-1.rnelson-demo.com:
+### Create a subdirectory export on gluster-1.rnelson-demo.com:
 The `/var/run/gluster/shared_storage/nfs-ganesha/exports/export.ganesha.conf` file contains the exports. You can create separate export files, and reference them with 'include' lines in the original export file, but this example is a configuration of having all exports defined within one file:
 ```
 [root@gluster-1 exports]# cat export.ganesha.conf
