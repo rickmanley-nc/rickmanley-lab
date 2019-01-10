@@ -13,8 +13,10 @@ Steps on client:
 
 
 On gluster-1:
-/var/run/gluster/shared_storage/nfs-ganesha/exports/export.ganesha.conf
 
+The `/var/run/gluster/shared_storage/nfs-ganesha/exports/export.ganesha.conf` file contains the exports. You can create separate export files, but this is a configuration of having all exports within one file:
+
+```
 [root@gluster-1 exports]# cat export.ganesha.conf
 EXPORT{
       Export_Id = 2;
@@ -50,6 +52,12 @@ EXPORT{
       Transports = "UDP","TCP";
       SecType = "sys";
      }
+```
 
+After updating the exports, run the following:
+
+```
 /usr/libexec/ganesha/ganesha-ha.sh --refresh-config /var/run/gluster/shared_storage/nfs-ganesha/ ganesha
-Then restart nfs-ganesha on all gluster nodes
+```
+
+Then restart nfs-ganesha on all gluster nodes.
