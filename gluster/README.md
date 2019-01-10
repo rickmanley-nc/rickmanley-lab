@@ -127,7 +127,7 @@ Refresh-config failed on gluster-6. Please check logs on gluster-6
 Refresh-config failed on localhost.
 ```
 Now restart nfs-ganesha on all gluster nodes.
-- ansible gluster -a "service nfs-ganesha restart"
+- ansible gluster -a "systemctl restart nfs-ganesha"
 
 Verify that the mounts show up:
 - showmount -e gluster-3.rnelson-demo.com
