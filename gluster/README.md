@@ -1,16 +1,15 @@
 
+#Notes for deployment
 
-
-on client:
-register, enable repo, update, install glusterfs-fuse
-[root@gluster-client ~]# mount -t glusterfs gluster-1.rnelson-demo.com:/ganesha /mnt/client/
-[root@gluster-client ~]# cd /mnt/client/
-[root@gluster-client client]# mkdir -p directory1/subdirectory1
-[root@gluster-client client]# mkdir -p directory2/subdirectory2
-[root@gluster-client client]# touch directory1/subdirectory1/file-{1..5}
-[root@gluster-client client]# touch directory2/subdirectory2/file-{6..10}
-[root@gluster-client client]# touch directory1/file-{11..15}
-[root@gluster-client client]# touch directory2/file-{16..20}
+Steps on client:
+ mount -t glusterfs gluster-1.rnelson-demo.com:/ganesha /mnt/client/
+ cd /mnt/client/
+ mkdir -p directory1/subdirectory1
+ mkdir -p directory2/subdirectory2
+ touch directory1/subdirectory1/file-{1..5}
+ touch directory2/subdirectory2/file-{6..10}
+ touch directory1/file-{11..15}
+ touch directory2/file-{16..20}
 
 
 On gluster-1:
@@ -56,4 +55,4 @@ EXPORT{
      }
 
 /usr/libexec/ganesha/ganesha-ha.sh --refresh-config /var/run/gluster/shared_storage/nfs-ganesha/ ganesha
-Then restart nfs-ganesha on gluster-1, gluster-2, and gluster-3
+Then restart nfs-ganesha on all gluster nodes
