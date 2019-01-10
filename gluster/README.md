@@ -10,7 +10,8 @@ This deployment assumes the following:
   - configuring known_hosts
 - Make sure to update any variables, hostnames, sizes, etc within each playbook. In the future, I may update this repo with a group_vars/all file to have 1 location for variables.
 
-
+## Gotchas
+Resetting the environment is still being tested. Testing the `ganesha_destroy.conf`, we found that the line for the gluster_shared_storage was still in `/etc/fstab`. I believe we need to add a `lineinfile` module to the `0-reset.yml` playbook to ensure that line gets deleted.
 
 ## General Steps:
 1. Ensure that the Control Node's `/etc/ansible/hosts` file includes the following:
@@ -19,15 +20,16 @@ This deployment assumes the following:
 gluster-[1:6].rnelson-demo.com
 ```
 2. Deploy the infrastructure from the Control Node: `ansible-playbook 1-gluster-deploy.yml`
-3. Once deployed, log into `gluster-1.rnelson-demo.com` and ensure that the `/etc/ansible/hosts` file includes the following:
+3. Once deployed, log into `gluster-1.rnelson-demo.com` and ensure that the `/etc/ansible/hosts` file also includes the following:
 ```
 [gluster]
 gluster-[1:6].rnelson-demo.com
 ```
 4. Deploy the Gluster cluster and configure NFS Ganesha from `gluster-1.rnelson-demo.com`: `gdeploy -c 2-gdeploy-ganesha.conf`
 5. Configure the cache drive (by default, vdc) from `gluster-1.rnelson-demo.com`: `gdeploy -c 3-gdeploy-cache.conf`
-
-
+6. ***only for troubleshooting*** If you need to reset the environment:
+  - `gdeploy -c ganesha_destroy.conf`
+  - `ansible-playbook 0-reset.yml`
 
 ## Exporting a subdirectory
 ### Prepare the filesystem from the client:
