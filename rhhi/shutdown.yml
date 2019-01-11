@@ -55,9 +55,9 @@
       until: vms.stdout_lines | length == 0
       retries: 30
       delay: 10
-#    - name: Stop the Gluster volumes
-#      command: gluster vol stop {{ item }}
-#      run_once: true
-#      with_items: [ssdvmstore,nvmevmstore,engine]
-#    - name: Shutdown and poweroff servers
-#      command: shutdown -t 10 -P
+    - name: Stop the Gluster volumes
+      command: gluster vol stop {{ item }}
+      run_once: true
+      with_items: [ssdvmstore,nvmevmstore,engine]
+    - name: Shutdown and poweroff servers
+      command: shutdown -t 10 -P

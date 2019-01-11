@@ -1,5 +1,5 @@
 ---
-#this role needs to be reworked
+#Using the parted module won't work for /dev/sda which already has boot, swap and root mounted.
 - name: Create engine partition (this is a workaround. better in post of kickstart?)
   shell: echo -e "n\n\n\n+80G\nw\n" | fdisk /dev/sda
   args:

@@ -6,7 +6,8 @@
     - ssh-keys
     - known-hosts
     - register
-    - disk-prep
+# the role below is only needed for custom disk layouts. Update roles/disk-prep/tasks/main.yml file with customizations
+#    - disk-prep
 
 - hosts: "{{ node1_fqdn }}"
   name: Configure Gluster and Deploy Hosted Engine

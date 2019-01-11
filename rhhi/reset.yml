@@ -1,5 +1,5 @@
 ---
-# ansible-playbook -u root 0-reset.yml -k
+# ansible-playbook -u root reset.yml -k -e @group_vars/all
 - hosts: rhhi
   gather_facts: no
   ignore_errors: yes
@@ -7,6 +7,8 @@
   tasks:
   - name: "Clean up hosted-engine"
     command: "/usr/sbin/ovirt-hosted-engine-cleanup -q"
+    run_once: yes
+    delegate_to: "{{node1_fqdn}}"
 
   - name: "Stop the Gluster volume"
     gluster_volume: name={{ item }} state=stopped

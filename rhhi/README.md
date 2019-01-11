@@ -3,32 +3,31 @@
 This guide focuses on deploying a 3-node Red Hat Hyperconverged Infrastructure (RHHI) through Ansible Playbooks, fully functioning with little to no additional configuration needed, all within 1.5 hour.
 
 ## Assumptions
-The kickstart files set up the OS disk (`sda`), and leave the creation of the other partitions `sda4` and `sda5` for the `1-prep.yml` playbook. These Supermicro servers don't have a lot of room in them for another 2.5" drive, so I elected to just use a larger `sda` disk and partition it out.
+The kickstart files set up the OS disk (`sda`) with additional partitions (`sda4` and `sda5`)to be used for RHHI's storage domains. These Supermicro servers don't have a lot of physical space in them for another 2.5" drive, so I elected to use a larger `sda` disk and partition it out.
 
-For reference, I've included the kickstart files for each RHHI node under the `files/` directory in this repo.
+I've included the kickstart files for each RHHI node under the `files/` directory in this repo, just as a reference.
 
 Device layout:
 - /dev/sda is 500 GiB:
   - /dev/sda1 - 256 MiB - /boot/efi
   - /dev/sda2 - 1024 MiB - /boot
-  - /dev/sda3 - 45 GiB - Operating System
-  - /dev/sda4 - 69 GiB - engine volume
-  - /dev/sda5 - 335 GiB - ssdvmstore volume
+  - /dev/sda3 - 49 GiB - Operating System
+  - /dev/sda4 - 75 GiB - engine volume
+  - /dev/sda5 - 375 GiB - ssdvmstore volume
 - /dev/nvme0n1 - 225 GiB - nvmevmstore volume
 
 ## Requirements
-This deployment expects 3 partitions/disks. I want to change this to allow more flexibility, which means switching the `configure-gluster` role from using `gdeploy` to using the LVM ansible modules. Coming soon...
-
-Update your variable declarations in `group_vars/all.bak` and rename this to `group_vars/all`.
-
-Update your control node's ansible/hosts file to use 'rhhi' as the host selector:
+1. This deployment expects 3 partitions/disks. I want to change this to allow more flexibility, which means first order of business is to switch the `configure-gluster` role from using `gdeploy` to using the LVM ansible modules. Coming soon...
+2. Update your variable declarations in `group_vars/all.bak` and rename this to `group_vars/all`.
+3. Ensure the control node has the `python-ovirt-engine-sdk4` RPM installed.
+4. Update your control node's `/etc/ansible/hosts` file to use 'rhhi' as the host selector:
 ```
 [rhhi]
 rhhi[1:3].rnelson-demo.com
 ```
 
 ## General Steps
-Below are the general steps. I'm currently working on getting everything converted to roles for an easier to manage/troubleshoot deployment.
+Below are the general steps.
 
 1. Power on system, boot from network, select node's specific kickstart file.
 2. ansible-playbook -u root 1-prep.yml -k
@@ -49,8 +48,7 @@ Below are the general steps.
 6. ansible-playbook 3-ovirt-image-template.yml -e @group_vars/all
 
 ## Remaining tasks to complete:
-- Document the following:
-  - Ensure python-ovirt-engine-sdk4 is on control node
+- document ovirt.image-template... possibly just link to their github role
 - test without /etc/hosts failed. Test again (use ip addr for gluster network)
 - convert gdeploy conf file to playbook
 - tag taxonomy
