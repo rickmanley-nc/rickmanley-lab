@@ -1,0 +1,22 @@
+---
+- hosts: rhhi
+  name: Prepare systems before installing RHHI
+  roles:
+    - etc-hosts
+    - ssh-keys
+    - known-hosts
+    - register
+    - disk-prep
+
+- hosts: "{{ node1_fqdn }}"
+  name: Configure Gluster and Deploy Hosted Engine
+  roles:
+    - configure-gluster
+    - deploy-hosted-engine
+
+- hosts: localhost
+  gather_facts: no
+  roles:
+    - add-hosts
+    - add-gluster-network
+    - add-storage-domains

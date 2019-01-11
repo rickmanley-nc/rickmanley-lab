@@ -1,0 +1,16 @@
+---
+- name: copy hosted-engine answer file
+  template:
+    src: templates/he-answers.cfg.j2
+    dest: /tmp/answer.cfg
+    owner: root
+    group: root
+    mode: 0600
+
+- name: run hosted-engine
+  shell: hosted-engine --deploy --config-append=/tmp/answer.cfg < /dev/null
+  register: hostedengine
+
+# uncomment below to troubleshoot
+#    - name: debug hosted-engine
+#      debug: msg="{{ hostedengine }}"

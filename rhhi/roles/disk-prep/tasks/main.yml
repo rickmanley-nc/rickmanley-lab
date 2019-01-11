@@ -1,0 +1,19 @@
+---
+#this role needs to be reworked
+- name: Create engine partition (this is a workaround. better in post of kickstart?)
+  shell: echo -e "n\n\n\n+80G\nw\n" | fdisk /dev/sda
+  args:
+    executable: /bin/bash
+  ignore_errors: yes
+  tags: disk-prep
+
+- name: Create ssdvmstore partition (this is a workaround. better in post of kickstart?)
+  shell: echo -e "n\n\n\n\nw\n" | fdisk /dev/sda
+  args:
+    executable: /bin/bash
+  ignore_errors: yes
+  tags: disk-prep
+
+- name: partprobe
+  command: partprobe
+  tags: disk-prep

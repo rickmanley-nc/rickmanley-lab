@@ -1,0 +1,19 @@
+---
+#the gdeploy process is slow. This would perform better if repurposed to a traditional ansible playbook.
+- name: copy gdeploy.conf
+  template:
+    src: templates/gdeploy.conf.j2
+    dest: /tmp/gdeploy.conf
+    owner: root
+    group: root
+    mode: 0600
+  tags: configure-gluster
+
+- name: Run gdeploy
+  command: gdeploy -c /tmp/gdeploy.conf #-vv --trace
+  register: gdeploy_run
+  tags: configure-gluster
+
+# uncomment below for troubleshooting
+#    - name: debug gdeploy.conf
+#      debug: msg="{{ gdeploy_run }}"
