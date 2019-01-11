@@ -1,9 +1,7 @@
 ---
-- name: Download /etc/hosts file from Laptop
-  get_url:
-    url: http://{{ laptop_ip }}/hosts
+- name: Copy /etc/hosts file
+  copy:
+    src: etc-hosts
     dest: /etc/hosts
     mode: 0644
-    backup: yes
-    force: yes
   tags: etc-hosts

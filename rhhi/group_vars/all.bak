@@ -1,19 +1,25 @@
 ---
+#used by 'register' role
 activation_key: <>
 rhn_org_id: <>
-pool: <>
+pool_ID: <>
+repo_list:
+  - rhel-7-server-rhvh-4-rpms
 
-device_list:
-  - sda4
-  - sda5
-  - nvme0n1
+#used by gdeploy.conf,
+disk_for_storage_domain_engine: sda4
+disk_size_of_engine: 69GB
 
-storage_domain_list:
-  - engine
-  - ssdvmstore
-  - nvmevmstore
+disk_for_storage_domain_2: sda5
+disk_size_of_domain_2: 335GB
 
-#used by gdeployConfig-working.conf, he-answers.cfg, and 1-prep.yml
+disk_for_storage_domain_3: nvme0n1
+disk_size_of_domain_3: 225GB
+
+storage_domain_name_2: ssdvmstore
+storage_domain_name_3: nvmevmstore
+
+#used by gdeploy.conf, he-answers.cfg, and roles
 node1_fqdn: rhhi1.rnelson-demo.com
 node2_fqdn: rhhi2.rnelson-demo.com
 node3_fqdn: rhhi3.rnelson-demo.com
@@ -23,9 +29,9 @@ node3_gluster_fqdn: rhhi3-gluster.rnelson-demo.com
 node1_gluster_ip: 10.0.0.11
 node2_gluster_ip: 10.0.0.12
 node3_gluster_ip: 10.0.0.13
-node_If2: eno2
+node_interface_dev_name: eno2
 
-#used by he-answers.cfg and 2-storage-he-hosts-network.yml
+#used by he-answers.cfg and roles
 rhvm_fqdn: rhvm.rnelson-demo.com
 rhvm_bridgeName: ovirtmgmt
 rhvm_bridgeIf: eno1

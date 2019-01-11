@@ -5,7 +5,6 @@
   hosts: localhost
   gather_facts: no
   vars:
-    description_comment: "snap after gdeploy"
     server_list:
       - gluster-1
       - gluster-2
@@ -27,7 +26,7 @@
       ovirt_snapshots:
         auth: "{{ ovirt_auth }}"
         vm_name: "{{ item }}"
-        description: "{{ description_comment }}"
+        description: snap after gdeploy
         use_memory: true
       with_items:
        - "{{ server_list }}"

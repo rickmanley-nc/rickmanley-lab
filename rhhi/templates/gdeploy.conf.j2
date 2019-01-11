@@ -23,83 +23,83 @@ ignore_script_errors=no
 
 [pv1]
 action=create
-devices=sda4
+devices={{disk_for_storage_domain_engine}}
 ignore_pv_errors=no
 
 [pv2]
 action=create
-devices=sda5
+devices={{disk_for_storage_domain_2}}
 ignore_pv_errors=no
 
 [pv3]
 action=create
-devices=nvme0n1
+devices={{disk_for_storage_domain_3}}
 ignore_pv_errors=no
 
 [vg1]
 action=create
-vgname=gluster_vg_sda4
-pvname=sda4
+vgname=gluster_vg_{{disk_for_storage_domain_engine}}
+pvname={{disk_for_storage_domain_engine}}
 ignore_vg_errors=no
 
 [vg2]
 action=create
-vgname=gluster_vg_sda5
-pvname=sda5
+vgname=gluster_vg_{{disk_for_storage_domain_2}}
+pvname={{disk_for_storage_domain_2}}
 ignore_vg_errors=no
 
 [vg3]
 action=create
-vgname=gluster_vg_nvme0n1
-pvname=nvme0n1
+vgname=gluster_vg_{{disk_for_storage_domain_3}}
+pvname={{disk_for_storage_domain_3}}
 ignore_vg_errors=no
 
 [lv1]
 action=create
-poolname=gluster_thinpool_sda5
+poolname=gluster_thinpool_{{disk_for_storage_domain_2}}
 ignore_lv_errors=no
-vgname=gluster_vg_sda5
+vgname=gluster_vg_{{disk_for_storage_domain_2}}
 lvtype=thinpool
-size=335GB
+size={{disk_size_of_domain_2}}
 poolmetadatasize=2GB
 
 [lv2]
 action=create
-poolname=gluster_thinpool_nvme0n1
+poolname=gluster_thinpool_{{disk_for_storage_domain_3}}
 ignore_lv_errors=no
-vgname=gluster_vg_nvme0n1
+vgname=gluster_vg_{{disk_for_storage_domain_3}}
 lvtype=thinpool
-size=225GB
+size={{disk_size_of_domain_3}}
 poolmetadatasize=2GB
 
-[lv7]
+[lv3]
 action=create
 lvname=gluster_lv_engine
 ignore_lv_errors=no
-vgname=gluster_vg_sda4
+vgname=gluster_vg_{{disk_for_storage_domain_engine}}
 mount=/gluster_bricks/engine
-size=69GB
+size={{disk_size_of_engine}}
 lvtype=thick
 
-[lv8]
+[lv4]
 action=create
-lvname=gluster_lv_ssdvmstore
+lvname=gluster_lv_{{storage_domain_name_2}}
 ignore_lv_errors=no
-vgname=gluster_vg_sda5
-mount=/gluster_bricks/ssdvmstore
+vgname=gluster_vg_{{disk_for_storage_domain_2}}
+mount=/gluster_bricks/{{storage_domain_name_2}}
 lvtype=thinlv
-poolname=gluster_thinpool_sda5
-virtualsize=335GB
+poolname=gluster_thinpool_{{disk_for_storage_domain_2}}
+virtualsize={{disk_size_of_domain_2}}
 
-[lv9]
+[lv5]
 action=create
-lvname=gluster_lv_nvmevmstore
+lvname=gluster_lv_{{storage_domain_name_3}}
 ignore_lv_errors=no
-vgname=gluster_vg_nvme0n1
-mount=/gluster_bricks/nvmevmstore
+vgname=gluster_vg_{{disk_for_storage_domain_3}}
+mount=/gluster_bricks/{{storage_domain_name_3}}
 lvtype=thinlv
-poolname=gluster_thinpool_nvme0n1
-virtualsize=225GB
+poolname=gluster_thinpool_{{disk_for_storage_domain_3}}
+virtualsize={{disk_size_of_domain_3}}
 
 [service3]
 action=restart
@@ -127,27 +127,27 @@ replica=yes
 replica_count=3
 key=group,storage.owner-uid,storage.owner-gid,network.ping-timeout,performance.strict-o-direct,network.remote-dio,cluster.granular-entry-heal
 value=virt,36,36,30,on,off,enable
-brick_dirs=rhhi1-gluster.rnelson-demo.com:/gluster_bricks/engine/engine,rhhi2-gluster.rnelson-demo.com:/gluster_bricks/engine/engine,rhhi3-gluster.rnelson-demo.com:/gluster_bricks/engine/engine
+brick_dirs={{node1_gluster_fqdn}}:/gluster_bricks/engine/engine,{{node2_gluster_fqdn}}:/gluster_bricks/engine/engine,{{node3_gluster_fqdn}}:/gluster_bricks/engine/engine
 ignore_volume_errors=no
 
 [volume2]
 action=create
-volname=ssdvmstore
+volname={{storage_domain_name_2}}
 transport=tcp
 replica=yes
 replica_count=3
 key=group,storage.owner-uid,storage.owner-gid,network.ping-timeout,performance.strict-o-direct,network.remote-dio,cluster.granular-entry-heal
 value=virt,36,36,30,on,off,enable
-brick_dirs=rhhi1-gluster.rnelson-demo.com:/gluster_bricks/ssdvmstore/ssdvmstore,rhhi2-gluster.rnelson-demo.com:/gluster_bricks/ssdvmstore/ssdvmstore,rhhi3-gluster.rnelson-demo.com:/gluster_bricks/ssdvmstore/ssdvmstore
+brick_dirs={{node1_gluster_fqdn}}:/gluster_bricks/{{storage_domain_name_2}}/{{storage_domain_name_2}},{{node2_gluster_fqdn}}:/gluster_bricks/{{storage_domain_name_2}}/{{storage_domain_name_2}},{{node3_gluster_fqdn}}:/gluster_bricks/{{storage_domain_name_2}}/{{storage_domain_name_2}}
 ignore_volume_errors=no
 
 [volume3]
 action=create
-volname=nvmevmstore
+volname={{storage_domain_name_3}}
 transport=tcp
 replica=yes
 replica_count=3
 key=group,storage.owner-uid,storage.owner-gid,network.ping-timeout,performance.strict-o-direct,network.remote-dio,cluster.granular-entry-heal
 value=virt,36,36,30,on,off,enable
-brick_dirs=rhhi1-gluster.rnelson-demo.com:/gluster_bricks/nvmevmstore/nvmevmstore,rhhi2-gluster.rnelson-demo.com:/gluster_bricks/nvmevmstore/nvmevmstore,rhhi3-gluster.rnelson-demo.com:/gluster_bricks/nvmevmstore/nvmevmstore
+brick_dirs={{node1_gluster_fqdn}}:/gluster_bricks/{{storage_domain_name_3}}/{{storage_domain_name_3}},{{node2_gluster_fqdn}}:/gluster_bricks/{{storage_domain_name_3}}/{{storage_domain_name_3}},{{node3_gluster_fqdn}}:/gluster_bricks/{{storage_domain_name_3}}/{{storage_domain_name_3}}
 ignore_volume_errors=no

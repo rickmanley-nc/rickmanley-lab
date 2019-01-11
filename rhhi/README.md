@@ -17,9 +17,11 @@ Device layout:
 - /dev/nvme0n1 - 225 GiB - nvmevmstore volume
 
 ## Requirements
+This deployment expects 3 partitions/disks. I want to change this to allow more flexibility, which means switching the `configure-gluster` role from using `gdeploy` to using the LVM ansible modules. Coming soon...
+
 Update your variable declarations in `group_vars/all.bak` and rename this to `group_vars/all`.
 
-Update your control node's ansible/hosts file to include the following:
+Update your control node's ansible/hosts file to use 'rhhi' as the host selector:
 ```
 [rhhi]
 rhhi[1:3].rnelson-demo.com
@@ -36,12 +38,21 @@ Below are the general steps. I'm currently working on getting everything convert
 6. Download copy of kvm image and upload to a shared folder. I'm using an FTP share, so my `qcow_url` value is "ftp://{{qcow_url_ip}}/PXE/isos/rhel-7-kvm-image.qcow2"
 7. ansible-playbook 3-ovirt-image-template.yml -e @group_vars/all
 
+## Testing Roles General Steps
+Below are the general steps.
+
+1. Power on system, boot from network, select node's specific kickstart file.
+2. ansible-playbook -u root main.yml -k
+3. ansible-galaxy install ovirt.image-template
+4. Update ovirt.image-template variables.
+5. Download copy of kvm image and upload to a shared folder. I'm using an FTP share, so my `qcow_url` value is "ftp://{{qcow_url_ip}}/PXE/isos/rhel-7-kvm-image.qcow2"
+6. ansible-playbook 3-ovirt-image-template.yml -e @group_vars/all
+
 ## Remaining tasks to complete:
 - Document the following:
   - Ensure python-ovirt-engine-sdk4 is on control node
 - test without /etc/hosts failed. Test again (use ip addr for gluster network)
 - convert gdeploy conf file to playbook
-- document ovirt-image-template / automate the install from galaxy and execution.
 - tag taxonomy
 
 ## Nice to have:
