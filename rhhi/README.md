@@ -3,7 +3,7 @@
 This guide focuses on deploying a 3-node Red Hat Hyperconverged Infrastructure (RHHI) through Ansible Playbooks, fully functioning with little to no additional configuration needed, all within 1.5 hour.
 
 ## Assumptions
-The kickstart files set up the OS disk (`sda`), and leave the creation of the other partitions `sda4` and `sda5` for the `1-prep.yml` playbook. These Supermicro servers don't have a lot of room in them for another 2.5" drive, so I elected to just use a larger `sda` disk and partition it out. If you have a different disk layout than what's described below, you'll want to modify the device names within `group_vars/all`.
+The kickstart files set up the OS disk (`sda`), and leave the creation of the other partitions `sda4` and `sda5` for the `1-prep.yml` playbook. These Supermicro servers don't have a lot of room in them for another 2.5" drive, so I elected to just use a larger `sda` disk and partition it out.
 
 For reference, I've included the kickstart files for each RHHI node under the `files/` directory in this repo.
 
