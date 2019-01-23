@@ -1,16 +1,23 @@
 # 6 node gluster deployment with nfs-ganesha + cache drive
+## Caveat
+
+This repo is meant to demonstrate how to deploy 6 Gluster nodes that have a volume configured for NFS-Ganesha while using an extra drive for an LVM cache. In this specific repo, I'm ***deploying*** on top of RHHI-V (RHV + Gluster). It is meant just as a demonstration purpose and is not meant to be deployed on RHHI in this manner.
+
+The `2-gdeploy-ganesha.conf` and `3-gdeploy-cache.conf` files can still be used for physical node deployments, which is the intention of this repo.
+
 ## Assumptions
-This deployment assumes the following:
-- The `1-gluster-deploy.yml` playbook is run from a control node, and accomplishes the following:
-  - deploys 7 VMs (6 Gluster servers and 1 Gluster client)
-  - The 6 Gluster server VMs have 2 additional disks attached, for a total of 3 (vda, vdb, and vdc)
-  - registering with Customer Portal
-  - enabling repos
-  - configuring ssh-keys
-  - configuring known_hosts
-- Make sure to update any variables, hostnames, sizes, etc within each playbook. In the future, I may update this repo with a group_vars/all file to have 1 location for variables.
+
+This deployment assumes 3 block devices are being used on each node (vda, vdb, and vdc). The `1-gluster-deploy.yml` playbook is run from a control node, and accomplishes the following:
+  - deploys 7 nodes on RHHI (6 Gluster servers and 1 Gluster client)
+  - registers with Customer Portal
+  - enables correct repositories
+  - configures ssh-keys
+  - configures known_hosts
+
+Make sure to update any variables, hostnames, sizes, etc within each playbook. In the future, I may update this repo with a `group_vars/all` file to have 1 location for variables, but this is not a priority at the moment.
 
 ## Gotchas
+
 Resetting the environment is still being tested. Testing the `ganesha_destroy.conf`, we found that the line for the gluster_shared_storage was still in `/etc/fstab`. I believe we need to add a `lineinfile` module to the `0-reset.yml` playbook to ensure that line gets deleted.
 
 The 'corosync', 'pacemaker', and 'nfs-ganesha' daemons have been enabled to run at boot. This is ***not*** the default behavior. Enabling them to run at boot is good practice for HA, but it may not be the desired behavior for your use case. If you choose to disable these at boot, the following commands can be run on a node to get it joined back into the cluster and exporting the share:
@@ -20,7 +27,7 @@ The 'corosync', 'pacemaker', and 'nfs-ganesha' daemons have been enabled to run 
 - Wait for `pcs status` to report all resources up and running
 - ansible gluster -a "systemctl restart nfs-ganesha"
 
-Last gotcha... I noticed some lag on a node rebooting where the 'nfs-ganesha' daemon did not initialize properly. Restarting the daemon fixed this... looks like a timing issue on bootup. We could probably add delays to the start to resolve this.
+Last gotcha... I noticed some lag on a node rebooting where the 'nfs-ganesha' daemon did not initialize properly. Restarting the daemon fixed this... looks like a timing issue on bootup. Perhaps `_netdev` option would resolve this.
 
 ## General Steps:
 1. Ensure that the Control Node's `/etc/ansible/hosts` file includes the following:
@@ -43,6 +50,7 @@ gluster-[1:6].rnelson-demo.com
 7. ***only for troubleshooting*** If you need to reset the environment:
   - `gdeploy -c ganesha_destroy.conf`
   - `ansible-playbook 0-reset.yml`
+  - Remove line from /etc/fstab referencing nfs-ganesha volume. This should be added to the ganesha_destroy or reset playbook.
 
 ## Exporting a subdirectory
 ### Prepare the filesystem from the client:
