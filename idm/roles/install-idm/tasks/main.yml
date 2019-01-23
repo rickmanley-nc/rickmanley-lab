@@ -1,0 +1,23 @@
+---
+- name: Install IdM RPMs
+  yum:
+    name: "{{ item }}"
+    state: latest
+  with_items:
+    - ipa-server
+    - ipa-server-dns
+  tags: idm
+
+# Due to https://bugzilla.redhat.com/show_bug.cgi?id=1504688, we may need to reboot client after installing RPMs. As a potential workaround I put the ipa-server and ipa-server-dns in the ks.cfg file so that we'd force a reboot after install.
+
+#- name: Configure IdM
+#  command: ipa-server-install -U --hostname={{ idm_hostname }} --domain={{ idm_domain }} --realm={{ idm_realm }} --ds-password={{ idm_dir_admin_password}} --admin-password={{ idm_admin_password }} --mkhomedir
+#  tags: idm
+
+#- name: obtaining TGT for admin@rnelson-demo.com (This is a no-no... proper way is to create a keytab for the principal and auth with -k -t /path/to/keytab)
+#  shell: echo "{{idm_register_password}}" | kinit "{{idm_register_username}}"@"{{idm_realm}}"
+#  tags: idm
+
+#- name: Configure {{idm_domain}} DNS Zone to sync A/AAAA and PTR records (may need workaround described www.redhat.com/archives/freeipa-users/2014-March/msg00044.html
+#  command: ipa dnszone-mod --allow-sync-ptr=1 {{idm_domain}}
+#  tags: idm

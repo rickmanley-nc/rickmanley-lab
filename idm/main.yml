@@ -1,0 +1,11 @@
+---
+- name: Configure OS
+  hosts: idm
+  roles:
+    - register
+    - firewall
+
+- name: Install and Configure IdM
+  hosts: idm
+  roles:
+    - install-idm
