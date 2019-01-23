@@ -1,0 +1,55 @@
+---
+- name: Create Compute Resource (LibVirt)
+  command: hammer compute-resource create --description 'LibVirt Compute Resource' --locations "{{satellite_location}}" --name Libvirt_CR --organizations "{{satellite_organization}}" --url 'qemu+tcp://192.168.126.1/system/' --provider libvirt --set-console-password 0
+  tags: provision
+
+- name: Create VLAN_126 subnet
+  command: hammer subnet create --name vlan_126 --dhcp-id 1 --dns-id 1 --tftp-id 1 --organizations "{{satellite_organization}}" --domains "{{satellite_domain}}" --locations "{{satellite_location}}" --ipam DHCP --network 192.168.126.0 --mask 255.255.255.0 --gateway 192.168.126.1 --from 192.168.126.150 --to 192.168.126.200
+  tags: provision
+
+- name: Inherit the default Puppet Environment 'production' into the Organization and Location
+  command: hammer environment update --name production --organizations {{satellite_organization}} --locations {{satellite_location}}
+  tags: provision
+
+- name: Import existing puppet classes for foreman_scap_client and access_insights_client into production puppet environment
+  command: hammer proxy import-classes --environment production --name {{satellite_hostname}}
+  tags: provision
+
+#from kbase https://access.redhat.com/solutions/3217081
+
+- name: Register ID value in specific Smart Class Parameters for the foreman_scap_client puppet class that's missing a default value
+  shell: hammer --output='csv' sc-param list --puppet-class "foreman_scap_client" --search="{{ item }}" | tail -n+2 | cut -d ',' -f 1
+  with_items:
+    - parameter=policies
+    - parameter=server
+    - parameter=port
+  register: smartclass
+  tags: provision
+
+- name: Update default Smart Class Parameters for the foreman_scap_client puppet class POLICIES
+  command: hammer sc-param update --override yes --id {{smartclass.results[0].stdout}} --default-value '<%= @host.policies_enc %>' --parameter-type array
+  tags: provision
+
+- name: Update default Smart Class Parameters for the foreman_scap_client puppet class SERVER
+  command: hammer sc-param update --override yes --id {{smartclass.results[1].stdout}} --default-value '$(hostname -f)'
+  tags: provision
+
+- name: Update default Smart Class Parameters for the foreman_scap_client puppet class PORT
+  command: hammer sc-param update --override yes --id {{smartclass.results[2].stdout}} --default-value '9090'
+  tags: provision
+
+- name: Create Host Group for Development
+  command: hammer hostgroup create --name RHEL7_Development_Servers --query-organization {{satellite_organization}} --organizations {{satellite_organization}} --locations {{satellite_location}} --lifecycle-environment Development --content-view Development-RHEL7 --environment production --puppet-ca-proxy {{satellite_hostname}} --puppet-proxy {{satellite_hostname}} --content-source-id 1 --openscap-proxy-id 1 --compute-profile-id 1 --domain {{satellite_domain}} --realm {{ idm_realm }} --subnet vlan_126 --puppet-classes access_insights_client,foreman_scap_client,foreman_scap_client::params --architecture x86_64 --operatingsystem 'RedHat 7.4' --partition-table 'Kickstart default' --pxe-loader 'PXELinux BIOS' --root-pass {{hostgroup_root_pass}}
+  tags: provision
+
+- name: Set Host Group "RHEL 7 Development Servers" activation keys to "ak-Reg_To_Development-rhel7"
+  command: hammer hostgroup set-parameter --hostgroup RHEL7_Development_Servers --name "kt_activation_keys" --value ak-Reg_To_Development-rhel7
+  tags: provision
+
+- name: Create Host Group for Lab
+  command: hammer hostgroup create --name RHEL7_Lab_Servers --query-organization {{satellite_organization}} --organizations {{satellite_organization}} --locations {{satellite_location}} --lifecycle-environment Lab --content-view Lab-RHEL7-EAP7 --environment production --puppet-ca-proxy {{satellite_hostname}} --puppet-proxy {{satellite_hostname}} --content-source-id 1 --openscap-proxy-id 1 --compute-profile-id 1 --domain {{satellite_domain}} --realm {{ idm_realm }} --subnet vlan_126 --puppet-classes access_insights_client,foreman_scap_client,foreman_scap_client::params --architecture x86_64 --operatingsystem 'RedHat 7.4' --partition-table 'Kickstart default' --pxe-loader 'PXELinux BIOS' --root-pass {{hostgroup_root_pass}}
+  tags: provision
+
+- name: Set Host Group "RHEL 7 Lab Servers" activation keys to "ak-Reg_To_Lab-rhel7"
+  command: hammer hostgroup set-parameter --hostgroup "RHEL7_Lab_Servers" --name "kt_activation_keys" --value ak-Reg_To_Lab-rhel7
+  tags: provision

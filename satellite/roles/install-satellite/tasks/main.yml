@@ -1,0 +1,25 @@
+---
+- name: Install Satellite based RPMs
+  yum:
+    name: "{{ item }}"
+    state: latest
+  with_items:
+    - satellite
+    - satellite-clone
+    - puppet-foreman_scap_client
+    - NetworkManager-glib  # needed for nmcli module
+  tags: install
+
+- name: Need to reboot for dbus error after packages from above task installed
+  shell: sleep 10 && /sbin/shutdown -r now
+  async: 300
+  poll: 0
+
+- name: waiting for server to boot up
+  local_action: wait_for
+  args:
+    host: "{{satellite_hostname}}"
+    port: 22
+    delay: 30
+    timeout: 600
+    state: started

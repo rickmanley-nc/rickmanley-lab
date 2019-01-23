@@ -1,0 +1,6 @@
+---
+- name: Install SSH public key
+  authorized_key:
+    user: root
+    key: "{{ lookup('file', 'rnelson-homelab.pub') }}"
+  tags: keys

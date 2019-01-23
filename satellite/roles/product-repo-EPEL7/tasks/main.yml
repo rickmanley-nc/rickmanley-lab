@@ -1,0 +1,83 @@
+---
+- name: Download EPEL GPG Key for version 7 from upstream
+  get_url:
+    url: https://dl.fedoraproject.org/pub/epel/RPM-GPG-KEY-EPEL-7
+    dest: /root/RPM-GPG-KEY-EPEL-7
+  tags: epel7
+
+- name: Create EPEL GPG Key
+  command: hammer gpg create --key /root/RPM-GPG-KEY-EPEL-7  --name 'GPG-EPEL-7' --organization "{{satellite_organization}}"
+  tags: epel7
+
+- name: Create EPEL Product
+  command: hammer product create --name='Extra Packages for Enterprise Linux' --organization "{{satellite_organization}}" --description 'Extra Packages for Enterprise Linux'
+  tags: epel7
+
+- name: Create EPEL Repository
+  command: hammer repository create --name='EPEL 7 - x86_64' --organization "{{satellite_organization}}" --product='Extra Packages for Enterprise Linux' --content-type='yum' --publish-via-http=true --url=http://dl.fedoraproject.org/pub/epel/7/x86_64/ --checksum-type=sha256 --gpg-key=GPG-EPEL-7
+  tags: epel7
+
+- name: Add EPEL Product to Sync Plan
+  command: hammer product set-sync-plan --name "Extra Packages for Enterprise Linux" --organization "{{satellite_organization}}" --sync-plan 'Daily Sync'
+  tags: epel7
+
+- name: Ensure EPEL download policy set to 'Lazy'
+  command: hammer repository update --organization "{{satellite_organization}}" --product 'Extra Packages for Enterprise Linux' --name 'EPEL 7 - x86_64' --download-policy on_demand
+  tags: epel7
+
+- name: Sync EPEL repositories
+  command: hammer repository synchronize --organization "{{satellite_organization}}" --product 'Extra Packages for Enterprise Linux' --name 'EPEL 7 - x86_64'
+  tags: epel7
+
+- name: Create EPEL7 Content View
+  command: hammer content-view create --organization "{{satellite_organization}}" --name 'EPEL7' --label epel7 --description 'Contains only Extra Packages for Enterprise Linux 7 repository'
+  tags: epel7
+
+- name: Add EPEL7 Repository to EPEL7 Content View
+  command: hammer content-view add-repository --organization "{{satellite_organization}}" --name 'EPEL7' --product 'Extra Packages for Enterprise Linux' --repository 'EPEL 7 - x86_64'
+  tags: epel7
+
+- name: Publish Initial EPEL Content View
+  command: hammer content-view publish --organization "{{satellite_organization}}" --name EPEL7 --description 'Initial Publishing'
+  tags: epel7
+
+- name: Create Content View Filter (include all packages without errata)
+  command: hammer content-view filter create --organization "{{satellite_organization}}" --content-view EPEL7 --name "All packages without errata" --inclusion true --type rpm --original-packages true
+  tags: epel7
+
+- name: Create Content View Filter (All errata until Aug 1, 2017)
+  command: hammer content-view filter create --organization "{{satellite_organization}}" --content-view EPEL7 --name "All errata until Aug 1, 2017" --inclusion true --type erratum
+  tags: epel7
+
+- name: Create Rule for Filter (All errata until Aug 1, 2017)
+  command: hammer content-view filter rule create --organization "{{satellite_organization}}" --content-view EPEL7 --content-view-filter "All errata until Aug 1, 2017" --types enhancement,bugfix,security --end-date 2017-08-01
+  tags: epel7
+
+- name: Create Content View Filter (Exclude Puppet packages)
+  command: hammer content-view filter create --organization "{{satellite_organization}}" --content-view EPEL7 --name "Exclude Puppet packages" --inclusion false --type rpm
+  tags: epel7
+
+- name: Create Rule for Filter (Exclude Puppet packages)
+  command: hammer content-view filter rule create --name "puppet*" --organization "{{satellite_organization}}" --content-view EPEL7 --content-view-filter "Exclude Puppet packages"
+  tags: epel7
+
+- name: Create Content View Filter (Exclude qpid packages)
+  command: hammer content-view filter create --organization "{{satellite_organization}}" --content-view EPEL7 --name "Exclude qpid packages" --inclusion false --type rpm
+  tags: epel7
+
+- name: Create Rule for Filter (Exclude qpid packages)
+  command: hammer content-view filter rule create --name "*qpid*" --organization "{{satellite_organization}}" --content-view EPEL7 --content-view-filter "Exclude qpid packages"
+  tags: epel7
+
+#hammer content-view filter create --organization RedHat --content-view EPEL --name "All packages without errata" --inclusion true --type rpm --original-packages true
+#hammer content-view filter create --organization RedHat --content-view EPEL --name "All errata until Aug 1, 2017" --inclusion true --type erratum
+#hammer content-view filter rule create --organization RedHat --content-view EPEL --content-view-filter "All errata until Aug 1, 2017" --types enhancement,bugfix,security --end-date 2017-08-01
+#hammer content-view filter create --organization RedHat --content-view EPEL --name "Exclude Puppet packages" --inclusion false --type rpm
+#hammer content-view filter rule create --name "puppet*" --organization RedHat --content-view EPEL --content-view-filter "Exclude Puppet packages"
+#hammer content-view filter create --organization RedHat --content-view EPEL --name "Exclude qpid packages" --inclusion false --type rpm
+#hammer content-view filter rule create --name "*qpid*" --organization RedHat --content-view EPEL --content-view-filter "Exclude qpid packages"
+#hammer content-view publish --organization RedHat --name EPEL --description 'Added Filters for Aug 1, 2017'
+
+- name: Publish EPEL7 Content View after filters were added to show filters working
+  command: hammer content-view publish --organization "{{satellite_organization}}" --name EPEL7 --description 'Added Filters for Aug 1, 2017'
+  tags: epel7
