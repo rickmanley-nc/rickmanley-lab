@@ -11,7 +11,7 @@ disk_for_storage_domain_engine: sda4
 disk_size_of_engine: 69GB
 
 disk_for_storage_domain_2: sda5
-disk_size_of_domain_2: 370GB
+disk_size_of_domain_2: 340GB
 
 disk_for_storage_domain_3: nvme0n1
 disk_size_of_domain_3: 225GB

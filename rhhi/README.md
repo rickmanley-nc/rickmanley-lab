@@ -13,7 +13,7 @@ Device layout:
   - /dev/sda2 - 1024 MiB - /boot
   - /dev/sda3 - 49 GiB - Operating System
   - /dev/sda4 - 75 GiB - engine volume
-  - /dev/sda5 - 375 GiB - ssdvmstore volume
+  - /dev/sda5 - 340 GiB - ssdvmstore volume
 - /dev/nvme0n1 - 225 GiB - nvmevmstore volume
 
 ## Requirements

@@ -9,7 +9,8 @@
 # the role below is only needed for custom disk layouts. Update roles/disk-prep/tasks/main.yml file with customizations
 #    - disk-prep
 
-- hosts: "{{ node1_fqdn }}"
+#- hosts: "{{ node1_fqdn }}"
+- hosts: rhhi1.rnelson-demo.com
   name: Configure Gluster and Deploy Hosted Engine
   roles:
     - configure-gluster
