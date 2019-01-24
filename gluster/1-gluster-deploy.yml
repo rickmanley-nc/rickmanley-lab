@@ -22,6 +22,7 @@
         name: "{{ item }}"
         state: running
         instance_type: Medium
+        comment: DEMO
         nics:
           - name: nic1
             profile_name: ovirtmgmt
