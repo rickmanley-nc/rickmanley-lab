@@ -1,0 +1,86 @@
+---
+- hosts: all
+
+  tasks:
+
+  - name: stop gluster service
+    systemd:
+      name: glusterd
+      state: stopped
+
+  - name: Kill all remaining gluster processes
+    shell: /bin/bash -c 'pkill -9 {{ item }}'
+    with_items:
+      - glusterfs
+      - glusterfsd
+    ignore_errors: yes
+
+  - name: Clear existing gluster configuration
+    file:
+      path: "/var/lib/glusterd/{{ item }}"
+      state: absent
+    with_items:
+      - glusterd.info
+      - glustershd
+      - bitd
+      - glusterfind
+      - nfs
+      - peers
+      - quotad
+      - scub
+      - snaps
+      - ss_brick
+      - vols
+    ignore_errors: yes
+
+  - name: Start glusterd again
+    systemd:
+      name: glusterd
+      state: started
+
+- hosts: gluster-1.rnelson-demo.com
+  tasks:
+
+  - name: create a new cluster with gluster-1, gluster-2 and gluster-3 as members
+    command: gluster peer probe "{{ item }}"
+    with_items:
+      - gluster-2.rnelson-demo.com
+      - gluster-3.rnelson-demo.com
+
+#  - name: create ssh keys for root
+#    user:
+#      name: root
+#      generate_ssh_key: yes
+
+#  - name: retrieve ssh public key for root from rhgs1
+#    shell: cat /root/.ssh/id_rsa.pub
+#    register: ssh_keys
+#    tags:
+#      - ssh
+#
+#  - debug:
+#      msg: "{{ ssh_keys.stdout }}"
+#    tags:
+#      - ssh
+#
+#  - name: deploy ssh key on rhgs4
+#    authorized_key:
+#      user: root
+#      key: "{{ ssh_keys.stdout }}"
+#      state: present
+#    delegate_to: rhgs4
+#    tags:
+#      - ssh
+
+#- hosts: rhgs2
+#  remote_user: root
+#  tasks:
+
+- hosts: gluster-4.rnelson-demo.com
+  tasks:
+
+  - name: create a new cluster with gluster-4, gluster-5 and gluster-6 as members
+    command: gluster peer probe "{{ item }}"
+    with_items:
+      - gluster-5.rnelson-demo.com
+      - gluster-6.rnelson-demo.com
