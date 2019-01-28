@@ -30,17 +30,6 @@ rhhi[1:3].rnelson-demo.com
 Below are the general steps.
 
 1. Power on system, boot from network, select node's specific kickstart file.
-2. ansible-playbook -u root 1-prep.yml -k
-3. ansible-playbook -u root 2-storage-he-hosts-network.yml -e @group_vars/all
-4. ansible-galaxy install ovirt.image-template
-5. Update ovirt.image-template variables.
-6. Download copy of kvm image and upload to a shared folder. I'm using an FTP share, so my `qcow_url` value is "ftp://{{qcow_url_ip}}/PXE/isos/rhel-7-kvm-image.qcow2"
-7. ansible-playbook 3-ovirt-image-template.yml -e @group_vars/all
-
-## Testing Roles General Steps
-Below are the general steps.
-
-1. Power on system, boot from network, select node's specific kickstart file.
 2. ansible-playbook -u root main.yml -k
 3. ansible-galaxy install ovirt.image-template
 4. Update ovirt.image-template variables.
@@ -48,10 +37,10 @@ Below are the general steps.
 6. ansible-playbook 3-ovirt-image-template.yml -e @group_vars/all
 
 ## Remaining tasks to complete:
+- rhvm VM is not registered to customer portal. Need to add this for upgrading rhvm.
 - document ovirt.image-template... possibly just link to their github role
 - test without /etc/hosts failed. Test again (use ip addr for gluster network)
 - convert gdeploy conf file to playbook
-- tag taxonomy
 
 ## Nice to have:
 - The SYS-E200-8D systems require an OOB license to be able to use the Redfish APIs through a Redfish enabled firmware.
