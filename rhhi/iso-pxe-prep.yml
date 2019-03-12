@@ -1,0 +1,40 @@
+---
+- hosts: localhost
+  gather_facts: no
+
+  tasks:
+
+configure PXE environment
+configure RHV/ovirt 
+
+
+    # Pull files to setup PXE environment
+    - name: mkdir
+mkdir /mnt/{rhvh,fedora,rhel}
+
+    - name: mount rhel 7 iso loopback
+mount -o loop RHEL-7-ISO /mnt/rhel
+
+    - name: rpm2cpio for syslinux, grub2-
+rpm2cpio /mnt/rhvh/Packages/syslinux* |cpio -idmv
+rpm2cpio /mnt/rhvh/Packages/grub2-efi-x64-2.02-0.76.el7.x86_64.rpm |cpio -idmv
+rpm2cpio /mnt/rhvh/Packages/shim-x64-15-1.el7.x86_64.rpm |cpio -idmv
+
+    - name: copy shimx64 (UEFI) and grubx64 (BIOS?)
+scp ./boot/efi/EFI/redhat/shimx64-redhat.efi rnelson@diskstation:/volumeX/PXE/tftpboot/
+scp ./boot/efi/EFI/redhat/grubx64.efi rnelson@diskstation:/volumeX/PXE/tftpboot/
+
+    - name: unmount loopback
+umount /mnt/rhel
+
+    # Create
+    - name:
+
+
+cd $(mktemp -d)
+
+
+mount -o loop RHV-H-ISO /mnt/rhvh
+rpm2cpio /mnt/rhvh/Packages/redhat-virtualization-host-image-update* |cpio -idmv
+scp ./usr/share/redhat-virtualization-host/image/redhat-virtualization-host-4.2-20181121.0.el7_6.squashfs.img rnelson@diskstation:/volumeX/PXE/tftpboot/images/rhvh/nov18/
+umount /mnt/rhvh

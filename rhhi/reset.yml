@@ -29,7 +29,7 @@
     with_items: [ engine, ssdvmstore, nvmevmstore ]
 
   - name: "Dissolve the Trusted Storage Pool"
-    command: gluster peer detach {{ item }}
+    command: gluster peer detach {{ item }} --mode=script
     with_items: [ rhhi1-gluster.rnelson-demo.com, rhhi2-gluster.rnelson-demo.com, rhhi3-gluster.rnelson-demo.com ]
 
   - name: "Remove the VGs"
@@ -48,5 +48,5 @@
     command: dd if=/dev/zero of=/dev/{{ item }} bs=1M count=10
     with_items: [ sda4, sda5, nvme0n1 ]
 
-  - name: Unregister
-    command: subscription-manager unregister
+#  - name: Unregister
+#    command: subscription-manager unregister

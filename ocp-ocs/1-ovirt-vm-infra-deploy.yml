@@ -1,6 +1,5 @@
 ---
 #the template has already been created. It uses local host storage for OS disk.
-#All attached disks to VMs are in an NFS storage domain from a Synology diskstation.
 # This playbook is to be run on the bastion server
 #ansible-playbook -u root 1-ovirt-vm-infra-deploy.yml -k
 - name: oVirt VM infra
@@ -23,8 +22,8 @@
       ovirt_vms:
         auth: "{{ ovirt_auth }}"
         cluster: Default
-        template: rhel-7.6-kvm
-        storage_domain: vmstore
+        template: rhel-7.6-kvm-ssh
+        storage_domain: ssdvmstore
         name: "{{ item }}"
         state: running
         instance_type: Medium
@@ -55,7 +54,7 @@
       ovirt_disk:
         auth: "{{ ovirt_auth }}"
         vm_name: "{{ item.vm_name }}"
-        storage_domain: "nfs-synology"
+        storage_domain: "ssdvmstore"
         name: "{{ item.name }}-{{ item.id }}"
         size: "{{ item.size }}"
         format: cow
@@ -73,8 +72,8 @@
       ovirt_vms:
         auth: "{{ ovirt_auth }}"
         cluster: Default
-        template: rhel-7.6-kvm
-        storage_domain: vmstore
+        template: rhel-7.6-kvm-ssh
+        storage_domain: ssdvmstore
         name: "{{ item }}"
         state: running
         instance_type: Medium
@@ -103,11 +102,11 @@
          - ocp-app2
          - ocp-app3
 
-    - name: Create and attach disks for Infra and App nodes
+    - name: Create and attach disks for Infra nodes
       ovirt_disk:
         auth: "{{ ovirt_auth }}"
         vm_name: "{{ item.vm_name }}"
-        storage_domain: "nfs-synology"
+        storage_domain: "ssdvmstore"
         name: "{{ item.name }}-{{ item.id }}"
         size: "{{ item.size }}"
         format: cow
@@ -117,6 +116,18 @@
         - { vm_name: 'ocp-infra1', name: 'docker_disk', id: '1', size: '70GiB' }
         - { vm_name: 'ocp-infra2', name: 'docker_disk', id: '1', size: '70GiB' }
         - { vm_name: 'ocp-infra3', name: 'docker_disk', id: '1', size: '70GiB' }
+
+    - name: Create and attach disks for App nodes
+      ovirt_disk:
+        auth: "{{ ovirt_auth }}"
+        vm_name: "{{ item.vm_name }}"
+        storage_domain: "nvmevmstore"
+        name: "{{ item.name }}-{{ item.id }}"
+        size: "{{ item.size }}"
+        format: cow
+        interface: virtio
+        wait: true
+      with_items:
         - { vm_name: 'ocp-app1', name: 'docker_disk', id: '1', size: '70GiB' }
         - { vm_name: 'ocp-app2', name: 'docker_disk', id: '1', size: '70GiB' }
         - { vm_name: 'ocp-app3', name: 'docker_disk', id: '1', size: '70GiB' }
@@ -125,8 +136,8 @@
       ovirt_vms:
         auth: "{{ ovirt_auth }}"
         cluster: Default
-        template: rhel-7.6-kvm
-        storage_domain: vmstore
+        template: rhel-7.6-kvm-ssh
+        storage_domain: ssdvmstore
         name: "{{ item }}"
         state: running
         instance_type: Small
@@ -274,7 +285,7 @@
   name: Prepare nodes prior to OCP 3.11 Install
   gather_facts: yes
   vars:
-    activation_key: rnelson-rhhi
+    activation_key: rnelson-sales
     rhn_org_id: 1979710
     pool: 8a85f9833e1404a9013e3cddf95a0599
     idm_register_username: admin
@@ -284,7 +295,7 @@
       - rhel-7-server-rpms
       - rhel-7-server-extras-rpms
       - rhel-7-server-ose-3.11-rpms
-      - rhel-7-server-ansible-2.6-rpms
+      - rhel-7-server-ansible-2.7-rpms
 #      - rh-gluster-3-client-for-rhel-7-server-rpms
 
   tasks:
@@ -317,8 +328,7 @@
 
   - name: Install misc packages
     package:
-      name: wget,git,net-tools,bind-utils,yum-utils,iptables-services,bridge-utils,bash-completion,kexec-tools,sos,psacct,openshift-ansible,docker-1.13.1,ipa-client
-#glusterfs-fuse
+      name: wget,git,net-tools,bind-utils,yum-utils,iptables-services,bridge-utils,bash-completion,kexec-tools,sos,psacct,openshift-ansible,docker-1.13.1,ipa-client,glusterfs-fuse
       state: present
     tags: rpms
 

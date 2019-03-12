@@ -26,9 +26,9 @@ node3_fqdn: rhhi3.rnelson-demo.com
 node1_gluster_fqdn: rhhi1-gluster.rnelson-demo.com
 node2_gluster_fqdn: rhhi2-gluster.rnelson-demo.com
 node3_gluster_fqdn: rhhi3-gluster.rnelson-demo.com
-node1_gluster_ip: 10.0.0.11
-node2_gluster_ip: 10.0.0.12
-node3_gluster_ip: 10.0.0.13
+node1_gluster_ip: 172.0.0.11
+node2_gluster_ip: 172.0.0.12
+node3_gluster_ip: 172.0.0.13
 node_interface_dev_name: eno2
 
 #used by he-answers.cfg and roles

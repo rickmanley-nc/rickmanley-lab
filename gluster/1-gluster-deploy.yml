@@ -211,7 +211,7 @@
         delegate_to: "{{ item[1] }}"
         with_nested:
           - "{{ ssh_keys.stdout }}"
-          - "{{groups['gluster']}}"
+          - "{{groups['gluster-nfs']}}"
         tags: keys
       #end block
       delegate_to: "gluster-1.rnelson-demo.com"

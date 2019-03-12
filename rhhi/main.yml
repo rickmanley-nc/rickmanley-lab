@@ -1,3 +1,4 @@
+#ansible-playbook -u root main.yml -k
 ---
 - hosts: rhhi
   name: Prepare systems before installing RHHI
@@ -5,11 +6,8 @@
     - etc-hosts
     - ssh-keys
     - known-hosts
-    - register
-# the role below is only needed for custom disk layouts. Update roles/disk-prep/tasks/main.yml file with customizations
-#    - disk-prep
+#    - register
 
-#- hosts: "{{ node1_fqdn }}"
 - hosts: rhhi1.rnelson-demo.com
   name: Configure Gluster and Deploy Hosted Engine
   roles:

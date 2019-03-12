@@ -1,0 +1,124 @@
+#yum --enablerepo=rhel-7-server-rhv-4.2-manager-rpms install python-ovirt-engine-sdk4
+#ansible-playbook -u root 1-gluster-demo-deploy.yml -k
+---
+- hosts: localhost
+  name: Create Gluster servers
+  gather_facts: no
+
+  tasks:
+    - name: Login to RHV
+      ovirt_auth:
+        url: https://rhvm.rnelson-demo.com/ovirt-engine/api
+        insecure: yes
+        username: admin@internal
+        password: RedHat1!
+
+    - name: Create VMs
+      ovirt_vms:
+        auth: "{{ ovirt_auth }}"
+        cluster: Default
+        template: rhel-7.6-kvm
+        storage_domain: ssdvmstore
+        name: "{{ item }}"
+        state: running
+        instance_type: Medium
+        comment: DEMO
+        nics:
+          - name: nic1
+            profile_name: ovirtmgmt
+        cloud_init:
+          host_name: "{{ item }}.rnelson-demo.com"
+          user_name: root
+          root_password: RedHat1!
+          authorized_ssh_keys: ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDmn8iPMGUA5Pf+5Rl+APPs0IGdFlmbSm04/bn2LXBIE3kF4tH/MvZdcJCQEKegC/bSicqEPz8BYFkNPNqqY52bVwIbneHIPraJDD8HhGiIY/A32mGjLr4rZ+FBo14Hy/rkq8WdmxbrrSX61zHEwHEC369jH43RzvICjdlAzHwO2+cnkteKCcRkAFrcSlgyrr0tt9HTUMVB7FPBFrqplxZGLuGlxdRSOA9vAupaJ44VBPtUA7hEaUyK9DQBWIKoBjdM/S/n8ySq3zCGeh6oeSXwD605VPDRSre5NWwvtO86eBOdT00WHtGhvalij4UX2s3zYN8DyRqxS3VHjKku0gCZ rnelson@laptop.rnelson-demo.com
+          nic_name: eth0
+          nic_on_boot: true
+          nic_boot_protocol: dhcp
+
+          custom_script: |
+            runcmd:
+              - hostnamectl set-hostname {{ item }}.rnelson-demo.com
+              - yum -y remove cloud-init
+        wait: true
+      with_items:
+         - gluster-1
+         - gluster-2
+         - gluster-3
+
+    - name: Create and attach disks for gluster nodes
+      ovirt_disk:
+        auth: "{{ ovirt_auth }}"
+        vm_name: "{{ item.vm_name }}"
+        storage_domain: "ssdvmstore"
+        name: "{{ item.name }}-{{ item.id }}"
+        size: "{{ item.size }}"
+        format: cow
+        interface: virtio
+        wait: true
+      with_items:
+        - { vm_name: 'gluster-1', name: 'data-disk1', id: '1', size: '10GiB' }
+        - { vm_name: 'gluster-1', name: 'data-disk2', id: '2', size: '10GiB' }
+        - { vm_name: 'gluster-1', name: 'data-disk3', id: '3', size: '10GiB' }
+        - { vm_name: 'gluster-2', name: 'data-disk1', id: '1', size: '10GiB' }
+        - { vm_name: 'gluster-2', name: 'data-disk2', id: '2', size: '10GiB' }
+        - { vm_name: 'gluster-2', name: 'data-disk3', id: '3', size: '10GiB' }
+        - { vm_name: 'gluster-3', name: 'data-disk1', id: '1', size: '10GiB' }
+        - { vm_name: 'gluster-3', name: 'data-disk2', id: '2', size: '10GiB' }
+        - { vm_name: 'gluster-3', name: 'data-disk3', id: '3', size: '10GiB' }
+
+    - name: Cleanup RHV auth token
+      ovirt_auth:
+        ovirt_auth: "{{ ovirt_auth }}"
+        state: absent
+
+- hosts: gluster-1.rnelson-demo.com
+  name: configure ssh keys on gluster-1
+
+  tasks:
+    - block:
+      - name: ensure SSH key is generated
+        command: ssh-keygen -t rsa -f /root/.ssh/id_rsa -N ''
+        args:
+          creates: /root/.ssh/id_rsa
+        tags: keys
+
+      - name: fetch ssh key
+        shell: cat ~/.ssh/id_rsa.pub
+        register: ssh_keys
+        tags: keys
+
+      - name: verify key
+        debug: msg="{{ ssh_keys.stdout }}"
+        tags: keys
+
+      - name: deploy keys on all servers
+        authorized_key: user=root key="{{ item[0] }}"
+        delegate_to: "{{ item[1] }}"
+        with_nested:
+          - "{{ ssh_keys.stdout }}"
+          - "{{groups['gluster-demo']}}"
+        tags: keys
+      #end block
+      delegate_to: "gluster-1.rnelson-demo.com"
+      run_once: true
+
+    - name: Create known_hosts
+      shell: "ssh-keyscan -t ecdsa-sha2-nistp256 {{item}} >> /root/.ssh/known_hosts"
+      with_items:
+        - gluster-1.rnelson-demo.com
+        - gluster-2.rnelson-demo.com
+        - gluster-3.rnelson-demo.com
+
+- hosts: gluster-1.rnelson-demo.com
+  name: copy reset and demo yaml files to gluster-1
+
+  tasks:
+    - name: copy reset yaml
+      copy:
+        src: 0-reset-gluster-demo.yml
+        dest: /root/0-reset-gluster-demo.yml
+
+    - name: copy demo yaml
+      copy:
+        src: 3-gluster-demo.yml
+        dest: /root/3-gluster-demo.yml
