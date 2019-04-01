@@ -1,6 +1,6 @@
 ---
 - name: Configure OS
-  hosts: all
+  hosts: satellite
   become: yes
   roles:
     - hostname
@@ -9,7 +9,7 @@
     - ssh-keys
 
 - name: Install and Configure Satellite
-  hosts: all
+  hosts: satellite
   become: yes
   roles:
     - install-satellite

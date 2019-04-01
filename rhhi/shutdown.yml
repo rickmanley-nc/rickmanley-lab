@@ -56,7 +56,7 @@
       retries: 30
       delay: 10
     - name: Stop the Gluster volumes
-      command: gluster vol stop {{ item }}
+      command: gluster vol stop {{ item }} --mode=script
       run_once: true
       with_items: [ssdvmstore,nvmevmstore,engine]
     - name: Shutdown and poweroff servers

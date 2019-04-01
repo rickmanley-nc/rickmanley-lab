@@ -55,7 +55,7 @@
     run_once: yes
 
   - name: "Dissolve the Trusted Storage Pool"
-    command: gluster peer detach {{ item }}
+    command: gluster peer detach {{ item }} --mode=script
     with_items: [ gluster-2.rnelson-demo.com, gluster-3.rnelson-demo.com ]
     delegate_to: gluster-1.rnelson-demo.com
 

@@ -1,3 +1,4 @@
+# ansible-playbook deploy.yml
 ---
 - hosts: localhost
   gather_facts: no
@@ -15,8 +16,8 @@
       ovirt_vms:
         auth: "{{ ovirt_auth }}"
         cluster: Default
-        template: satellite
-        storage_domain: synology-nfs
+        template: satellite-v2
+        storage_domain: ssdvmstore
         name: "{{ item }}"
         state: running
         instance_type: Large
