@@ -48,5 +48,5 @@
     command: dd if=/dev/zero of=/dev/{{ item }} bs=1M count=10
     with_items: [ sda4, sda5, nvme0n1 ]
 
-#  - name: Unregister
-#    command: subscription-manager unregister
+  - name: Unregister
+    command: subscription-manager unregister

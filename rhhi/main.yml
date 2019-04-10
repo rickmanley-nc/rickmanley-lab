@@ -6,7 +6,7 @@
     - etc-hosts
     - ssh-keys
     - known-hosts
-#    - register
+    - register
 
 - hosts: rhhi1.rnelson-demo.com
   name: Configure Gluster and Deploy Hosted Engine
