@@ -1,0 +1,27 @@
+---
+- ovirt_host_pm:
+    name: "{{node1_fqdn}}"
+    address: "{{node1_ipmilan_addr}}"
+    username: "{{ipmilan_user}}"
+    password: "{{ipmilan_pass}}"
+    type: ipmilan
+  tags:
+    - power
+
+- ovirt_host_pm:
+    name: "{{node2_fqdn}}"
+    address: "{{node2_ipmilan_addr}}"
+    username: "{{ipmilan_user}}"
+    password: "{{ipmilan_pass}}"
+    type: ipmilan
+  tags:
+    - power
+
+- ovirt_host_pm:
+    name: "{{node3_fqdn}}"
+    address: "{{node3_ipmilan_addr}}"
+    username: "{{ipmilan_user}}"
+    password: "{{ipmilan_pass}}"
+    type: ipmilan
+  tags:
+    - power

@@ -37,6 +37,7 @@ Below are the general steps.
 6. ansible-playbook ovirt-image-template.yml -e @group_vars/all
 
 ## Remaining tasks to complete:
+- add power management.
 - rhvm VM is not registered to customer portal. Need to add this for upgrading rhvm.
 - document ovirt.image-template... possibly just link to their github role
 

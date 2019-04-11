@@ -20,3 +20,4 @@
     - add-hosts
     - add-gluster-network
     - add-storage-domains
+    - add-power-management
