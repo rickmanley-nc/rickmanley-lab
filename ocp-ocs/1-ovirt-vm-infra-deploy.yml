@@ -285,9 +285,6 @@
   name: Prepare nodes prior to OCP 3.11 Install
   gather_facts: yes
   vars:
-    activation_key: rnelson-sales
-    rhn_org_id: 1979710
-    pool: 8a85f9833e1404a9013e3cddf95a0599
     idm_register_username: admin
     idm_register_password: RedHat1!
     repos:

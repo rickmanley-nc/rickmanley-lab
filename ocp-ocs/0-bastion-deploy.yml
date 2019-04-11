@@ -63,9 +63,6 @@
   name: Prepare Bastion host for OCP/OCS Install
   gather_facts: no
   vars:
-    activation_key: rnelson-sales
-    rhn_org_id: 1979710
-    pool: 8a85f9833e1404a9013e3cddf95a0599
     repos:
     repo_list:
       - rhel-7-server-rpms
