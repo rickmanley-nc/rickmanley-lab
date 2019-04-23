@@ -32,22 +32,28 @@ Last gotcha... I noticed some lag on a node rebooting where the 'nfs-ganesha' da
 ## General Steps:
 1. Ensure that the Control Node's `/etc/ansible/hosts` file includes the following:
 ```
-[gluster]
+[gluster-nfs]
+gluster-[1:6].rnelson-demo.com
+
+[gluster-client]
+gluster-client.rnelson-demo.com
+```
+2. Update activation_key, rhn_org_id, and org_id.
+3. Deploy the infrastructure from the Control Node: `ansible-playbook -u root 1-gluster-deploy.yml -k`
+4. Once deployed, log into `gluster-1.rnelson-demo.com` and ensure that the `/etc/ansible/hosts` file also includes the following:
+```
+[gluster-nfs]
 gluster-[1:6].rnelson-demo.com
 ```
-2. Deploy the infrastructure from the Control Node: `ansible-playbook -u root 1-gluster-deploy.yml -k`
-3. Once deployed, log into `gluster-1.rnelson-demo.com` and ensure that the `/etc/ansible/hosts` file also includes the following:
+5. Deploy the Gluster cluster and configure NFS Ganesha from `gluster-1.rnelson-demo.com`: `gdeploy -c 2-gdeploy-ganesha.conf`
+6. Configure the cache drive (by default, vdc) from `gluster-1.rnelson-demo.com`: `gdeploy -c 3-gdeploy-cache.conf`
+7. Enable corosync and pacemaker to start on boot:
 ```
-[gluster]
-gluster-[1:6].rnelson-demo.com
+ansible gluster-nfs -u root -a "systemctl enable corosync"
+ansible gluster-nfs -u root -a "systemctl enable pacemaker"
+ansible gluster-nfs -u root -a "systemctl enable nfs-ganesha"
 ```
-4. Deploy the Gluster cluster and configure NFS Ganesha from `gluster-1.rnelson-demo.com`: `gdeploy -c 2-gdeploy-ganesha.conf`
-5. Configure the cache drive (by default, vdc) from `gluster-1.rnelson-demo.com`: `gdeploy -c 3-gdeploy-cache.conf`
-6. Enable corosync and pacemaker to start on boot:
-  - ansible gluster -u root -a "systemctl enable corosync"
-  - ansible gluster -u root -a "systemctl enable pacemaker"
-  - ansible gluster -u root -a "systemctl enable nfs-ganesha"
-7. ***only for troubleshooting*** If you need to reset the environment:
+8. ***only for troubleshooting*** If you need to reset the environment:
   - `gdeploy -c ganesha_destroy.conf`
   - `ansible-playbook 0-reset.yml`
   - Remove line from /etc/fstab referencing nfs-ganesha volume. This should be added to the ganesha_destroy or reset playbook.

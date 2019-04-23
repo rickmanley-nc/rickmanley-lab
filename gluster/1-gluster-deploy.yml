@@ -78,7 +78,7 @@
         ovirt_auth: "{{ ovirt_auth }}"
         state: absent
 
-- hosts: gluster
+- hosts: gluster-nfs
   name: Initial Setup for Gluster Nodes
   vars:
       activation_key: <>
