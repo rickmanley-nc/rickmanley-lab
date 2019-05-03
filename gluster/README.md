@@ -83,7 +83,7 @@ EXPORT{
           volume="ganesha";
            }
       Access_type = RW;
-      Disable_ACL = true;
+      Disable_ACL = false;  # to allow NFS ACLs
       Squash="No_root_squash";
       Pseudo="/ganesha";
       Protocols = "3", "4" ;
@@ -101,7 +101,7 @@ EXPORT{
 	  volpath="/directory1";
            }
       Access_type = RW;
-      Disable_ACL = true;
+      Disable_ACL = false;  # to allow NFS ACLs
       Squash="No_root_squash";
       Pseudo="/ganesha/directory1";
       Protocols = "3", "4" ;
@@ -119,12 +119,19 @@ EXPORT{
           volpath="/directory2";
            }
       Access_type = RW;
-      Disable_ACL = true;
+      Disable_ACL = false;  # to allow NFS ACLs
       Squash="No_root_squash";
       Pseudo="/ganesha/directory2";
       Protocols = "3", "4" ;
       Transports = "UDP","TCP";
       SecType = "sys";
+      client {
+              clients = 192.168.1.174;  # IP of the client.
+              access_type = "RO"; # Read-only permissions
+              Protocols = "3"; # Allow only NFSv3 protocol.
+              anonymous_uid = 1440;
+              anonymous_gid = 72;
+       }
      }
 ```
 After updating/creating the exports, run the following on `gluster-1.rnelson-demo.com`:
@@ -140,11 +147,18 @@ Refresh-config failed on gluster-5. Please check logs on gluster-5
 Refresh-config failed on gluster-6. Please check logs on gluster-6
 Refresh-config failed on localhost.
 ```
-Now restart nfs-ganesha on all gluster nodes.
-- ansible gluster -a "systemctl restart nfs-ganesha"
+Now restart nfs-ganesha on all gluster nodes. This step should be tested more.
+- ansible gluster-nfs -a "systemctl restart nfs-ganesha"
 
 Verify that the mounts show up:
 - showmount -e gluster-3.rnelson-demo.com
 
-### Testing from client:
-- mount -t nfs -o vers=4.0 192.168.1.102:/ganesha/directory1/ /mnt/ganesha/
+### Testing from gluster-client:
+This should **succeed**:
+- mount -t nfs -o vers=4.0 gluster-1.rnelson-demo.com:/ganesha/directory1/ /mnt/ganesha/
+This should **fail** because vers=4.0 is not allowed on directory2:
+- mount -t nfs -o vers=4.0 gluster-1.rnelson-demo.com:/ganesha/directory2/ /mnt/ganesha/
+This should **succeed**:
+- mount -t nfs -o vers=3 gluster-1.rnelson-demo.com:/ganesha/directory2/ /mnt/ganesha/
+This should **fail** because the export enforces this client to only be read-only
+- touch /mnt/ganesha/test.txt

@@ -81,9 +81,6 @@
 - hosts: gluster-nfs
   name: Initial Setup for Gluster Nodes
   vars:
-      activation_key: <>
-      rhn_org_id: <>
-      pool: <>
       repos:
       repo_list:
         - rhel-7-server-rpms
@@ -140,9 +137,6 @@
 - hosts: gluster-client
   name: configure gluster-client
   vars:
-      activation_key: <>
-      rhn_org_id: <>
-      pool: <>
       repos:
       repo_list:
         - rhel-7-server-rpms
