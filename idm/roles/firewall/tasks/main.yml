@@ -1,4 +1,9 @@
 ---
+- name: install firewalld
+  yum:
+    name: firewalld
+    state: latest
+
 - name: Start and Enable firewalld
   systemd: name=firewalld state=started enabled=yes
   tags: firewall

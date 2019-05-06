@@ -8,8 +8,6 @@
     - ipa-server-dns
   tags: idm
 
-# Due to https://bugzilla.redhat.com/show_bug.cgi?id=1504688, we may need to reboot client after installing RPMs. As a potential workaround I put the ipa-server and ipa-server-dns in the ks.cfg file so that we'd force a reboot after install.
-
 #- name: Configure IdM
 #  command: ipa-server-install -U --hostname={{ idm_hostname }} --domain={{ idm_domain }} --realm={{ idm_realm }} --ds-password={{ idm_dir_admin_password}} --admin-password={{ idm_admin_password }} --mkhomedir
 #  tags: idm

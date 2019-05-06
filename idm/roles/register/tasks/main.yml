@@ -1,32 +1,18 @@
 ---
-- name: Check to see if the system is subscribed
-  command: subscription-manager status
-  register: result
-  ignore_errors: True
-  tags: register
-
-- name: Register to RHN and attach  SKU through Activation Key
+- name: Register and Attach
   redhat_subscription:
     state: present
-    activationkey: "{{ idm_activation_key }}"
-    org_id: "{{ rhn_org_id }}"
+    activationkey: "{{activation_key}}"
+    org_id: "{{rhn_org_id}}"
+    pool: "{{pool_ID}}"
   tags: register
 
-- name: Disable All Repositories
-  command: subscription-manager repos --disable "*"
+- name: Disable All and Enable Specific Repositories
+  block:
+  - set_fact:
+      repos: "{{ repo_list | join(' --enable=') }}"
+  - debug:
+      var: repos
+  - name: Enable repos for RHEL7
+    command: subscription-manager repos --disable="*" --enable={{ repos }}
   tags: register
-
-- name: Enable repositories
-  command: /usr/sbin/subscription-manager repos --enable="{{item}}"
-  with_items: "{{ idm_repos }}"
-  tags: register
-
-- name: install firewalld
-  yum:
-    name: firewalld
-    state: latest
-
-- name: Install SSH public key
-  authorized_key:
-    user: root
-    key: "{{ lookup('file', 'rnelson-homelab.pub') }}"
