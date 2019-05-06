@@ -16,7 +16,7 @@
         auth: "{{ ovirt_auth }}"
         cluster: Default
         template: rhel-7.6-kvm
-        storage_domain: vmstore
+        storage_domain: ssdvmstore
         name: "{{ item }}"
         state: running
         instance_type: Small

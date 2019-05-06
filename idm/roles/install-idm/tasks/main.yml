@@ -8,9 +8,9 @@
     - ipa-server-dns
   tags: idm
 
-#- name: Configure IdM
-#  command: ipa-server-install -U --hostname={{ idm_hostname }} --domain={{ idm_domain }} --realm={{ idm_realm }} --ds-password={{ idm_dir_admin_password}} --admin-password={{ idm_admin_password }} --mkhomedir
-#  tags: idm
+- name: Configure IdM
+  command: ipa-server-install -U --hostname={{ idm_hostname }} --domain={{ idm_domain }} --realm={{ idm_realm }} --ds-password={{ idm_dir_admin_password}} --admin-password={{ idm_admin_password }} --mkhomedir
+  tags: idm
 
 #- name: obtaining TGT for admin@rnelson-demo.com (This is a no-no... proper way is to create a keytab for the principal and auth with -k -t /path/to/keytab)
 #  shell: echo "{{idm_register_password}}" | kinit "{{idm_register_username}}"@"{{idm_realm}}"

@@ -1,8 +1,8 @@
 ---
 #used by 'register' role
-activation_key: <>
-rhn_org_id: <>
-pool_ID: <>
+activation_key: rnelson-sales
+rhn_org_id: 1979710
+pool_ID: 8a85f9833e1404a9013e3cddf95a0599
 repo_list:
   - rhel-7-server-rpms
   - rhel-7-server-extras-rpms
