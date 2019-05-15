@@ -1,5 +1,7 @@
 # RHHI HomeLab
 
+## This current version of this repo is focused on RHHI-V 1.5. In RHHI-V 1.6, gdeploy is deprecated and has switched to gluster-ansible. A new branch will be created soon to switch.
+
 This guide focuses on deploying a 3-node Red Hat Hyperconverged Infrastructure (RHHI) through Ansible Playbooks, fully functioning with little to no additional configuration needed, all **under 1.5 hours**.
 
 ## Assumptions
